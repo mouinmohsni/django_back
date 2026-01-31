@@ -6,14 +6,10 @@ from .views import RegisterView, BusinessRegisterView, UserViewSet
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 router = DefaultRouter()
-# CORRECTION : Le préfixe est vide (r'') car '/api/users/' est déjà dans le fichier principal.
 router.register(r'', UserViewSet, basename='user')
 
 urlpatterns = [
-    # Les URLs du routeur sont maintenant / (liste) et /{pk}/ (détail)
-    path('', include(router.urls)),
-
-    # Les URLs manuelles sont relatives à /api/users/
+    # ⚠️ IMPORTANT : Les URLs spécifiques AVANT le routeur !
     # /api/users/register/
     path('register/', RegisterView.as_view(), name='register'),
     # /api/users/register-business/
@@ -22,4 +18,7 @@ urlpatterns = [
     path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     # /api/users/token/refresh/
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+
+    # Le routeur en DERNIER pour qu'il ne capture pas les URLs ci-dessus
+    path('', include(router.urls)),
 ]

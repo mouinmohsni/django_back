@@ -156,9 +156,12 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
-    # --- REMPLACEZ L'ANCIENNE CONFIGURATION PAR CELLE-CI ---
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',  # ← AJOUTE CETTE LIGNE
+    ],
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
+
 
 # --- AJOUTEZ CETTE NOUVELLE CONFIGURATION ---
 SPECTACULAR_SETTINGS = {
@@ -172,6 +175,12 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000", # L'adresse de votre front-end React
     "http://127.0.0.1:3000",
     "http://localhost:5173"
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://localhost:5173",
 ]
 
 SIMPLE_JWT = {

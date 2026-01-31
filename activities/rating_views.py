@@ -22,7 +22,8 @@ class ActivityRatingViewSet(viewsets.ModelViewSet):
         user = self.request.user
 
         # Validation cruciale : l'utilisateur a-t-il une réservation confirmée ?
-        if not activity.bookings.filter(user=user, status='confirmed').exists():
+        if not activity.bookings.filter(attendee=user, status='confirmed').exists():
+
             raise serializers.ValidationError("Vous devez avoir participé à cette activité pour la noter.")
 
         # On injecte l'utilisateur et l'activité avant de sauvegarder.

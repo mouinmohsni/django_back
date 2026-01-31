@@ -1,25 +1,22 @@
-# activities/urls.py (CORRIGÉ)
-
+# activities/urls.py
 from django.urls import path, include
-from rest_framework_nested import routers
+from rest_framework.routers import DefaultRouter
 from .views import ActivityViewSet
-from .rating_views import ActivityRatingViewSet # On importe depuis le bon fichier
+from .rating_views import ActivityRatingViewSet
 
-# 1. On crée un routeur principal simple.
-router = routers.SimpleRouter()
-# 2. On enregistre la route de base pour les activités. Le préfixe est vide ('')
-#    car le préfixe '/api/activities/' est déjà dans le fichier d'URL principal du projet.
-router.register(r'', ActivityViewSet, basename='activities')
+# Routeur simple pour les activités
+router = DefaultRouter()
+router.register(r'', ActivityViewSet, basename='activity')
 
-# 3. On crée le routeur imbriqué.
-#    - Il se base sur le 'router' principal.
-#    - Le préfixe est vide (r'').
-#    - Le 'lookup' est 'activity', qui correspondra à la variable 'activity_pk'.
-activities_router = routers.NestedSimpleRouter(router, r'', lookup='activity')
-activities_router.register(r'ratings', ActivityRatingViewSet, basename='activity-ratings')
-
-# 4. On combine les URLs générées.
+# Pour les ratings, on va utiliser une approche manuelle au lieu du NestedRouter
+# qui cause des problèmes avec Swagger
 urlpatterns = [
     path('', include(router.urls)),
-    path('', include(activities_router.urls)),
+    # Routes manuelles pour les ratings
+    path('<int:activity_pk>/ratings/',
+         ActivityRatingViewSet.as_view({'get': 'list', 'post': 'create'}),
+         name='activity-rating-list'),
+    path('<int:activity_pk>/ratings/<int:pk>/',
+         ActivityRatingViewSet.as_view({'get': 'retrieve', 'put': 'update', 'patch': 'partial_update', 'delete': 'destroy'}),
+         name='activity-rating-detail'),
 ]
