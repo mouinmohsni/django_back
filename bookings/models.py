@@ -38,6 +38,7 @@ class Booking(models.Model):
         default=StatusChoices.CONFIRMED, # On peut décider que par défaut, une réservation est confirmée.
         verbose_name="Statut"
     )
+
     booking_time = models.DateTimeField(
         auto_now_add=True, # La date et l'heure de la réservation sont enregistrées automatiquement.
         verbose_name="Date de réservation"

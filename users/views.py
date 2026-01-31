@@ -21,6 +21,7 @@ class RegisterView(generics.CreateAPIView):
     permission_classes = [permissions.AllowAny]
     serializer_class = RegisterSerializer
 
+
 class BusinessRegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     permission_classes = [permissions.IsAdminUser]
@@ -93,7 +94,7 @@ class UserViewSet(viewsets.ModelViewSet):
         # 6. Cas par défaut (au cas où, ne devrait jamais être atteint si les types sont bien gérés)
         return User.objects.filter(pk=user.pk)
 
-    from .serializers import  UserUpdateSerializer
+    from .serializers import UserUpdateSerializer
     def get_serializer_class(self):
         """
         Retourne le sérialiseur approprié en fonction de l'action demandée.
@@ -124,6 +125,10 @@ class UserViewSet(viewsets.ModelViewSet):
         # Action pour récupérer son propre profil
         elif self.action == 'me':
             self.permission_classes = [permissions.IsAuthenticated]
+        # NOUVEAU : Action pour récupérer les activités d'un coach
+        elif self.action == 'activities':
+            # Tout le monde peut voir les activités d'un coach (lecture publique)
+            self.permission_classes = [permissions.AllowAny]
         else:
             # Par sécurité, si une action n'est pas listée, on la réserve aux admins.
             self.permission_classes = [permissions.IsAdminUser]
@@ -147,7 +152,8 @@ class UserViewSet(viewsets.ModelViewSet):
         """
         owner = request.user
         if not owner.company:
-            return Response({'detail': "Vous devez d'abord créer le profil de votre entreprise."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'detail': "Vous devez d'abord créer le profil de votre entreprise."},
+                            status=status.HTTP_400_BAD_REQUEST)
 
         serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
@@ -175,12 +181,40 @@ class UserViewSet(viewsets.ModelViewSet):
             # On s'assure que le coach à dissocier existe et appartient bien à l'entreprise du propriétaire.
             coach_to_remove = User.objects.get(pk=pk, company=owner.company, type=User.USER_TYPE_COACH)
         except User.DoesNotExist:
-            return Response({'detail': 'Ce coach est introuvable ou ne fait pas partie de votre entreprise.'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'detail': 'Ce coach est introuvable ou ne fait pas partie de votre entreprise.'},
+                            status=status.HTTP_404_NOT_FOUND)
 
         # On ne supprime pas le coach, on le détache de l'entreprise.
         coach_to_remove.company = None
         coach_to_remove.save()
-        return Response({'status': f"Le coach {coach_to_remove.username} a été dissocié de votre entreprise."}, status=status.HTTP_200_OK)
+        return Response({'status': f"Le coach {coach_to_remove.username} a été dissocié de votre entreprise."},
+                        status=status.HTTP_200_OK)
 
+    # ============================================
+    # 🆕 NOUVELLE ACTION : Récupérer les activités d'un coach
+    # ============================================
+    @action(detail=True, methods=['get'], url_path='activities')
+    def activities(self, request, pk=None):
+        """
+        Endpoint pour récupérer toutes les activités d'un coach.
+        URL : GET /api/users/{user_id}/activities/
 
+        Retourne la liste des activités où cet utilisateur est l'instructeur.
+        """
+        user = self.get_object()
 
+        # Vérifier que l'utilisateur est un coach
+        if user.type != User.USER_TYPE_COACH:
+            return Response(
+                {"detail": "Cet utilisateur n'est pas un coach."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Récupérer les activités où cet utilisateur est l'instructeur
+        activities = user.instructed_activities.all()
+
+        # Import local pour éviter l'importation circulaire
+        from activities.serializers import SimpleActivitySerializer
+        serializer = SimpleActivitySerializer(activities, many=True)
+
+        return Response(serializer.data)
