@@ -133,9 +133,7 @@ class UserViewSet(viewsets.ModelViewSet):
             # Tout le monde peut voir les activités d'un coach (lecture publique)
             self.permission_classes = [permissions.AllowAny]
         # ✅ NOUVEAU : Actions pour les coaches (quitter/rejoindre une entreprise)
-        elif self.action in ['leave_company', 'join_company']:
-            # Seul un coach connecté peut faire ces actions
-            self.permission_classes = [permissions.IsAuthenticated]
+
         else:
             # Par sécurité, si une action n'est pas listée, on la réserve aux admins.
             self.permission_classes = [permissions.IsAdminUser]

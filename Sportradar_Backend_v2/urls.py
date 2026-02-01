@@ -5,6 +5,9 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from django.conf import settings
 from django.conf.urls.static import static
 
+from activities.views import ActivityViewSet
+from weather.views import weather_api
+
 urlpatterns = [
     path('admin/', admin.site.urls),
 
@@ -17,6 +20,14 @@ urlpatterns = [
     path('api/companies/', include('companies.urls')),
     path('api/activities/', include('activities.urls')),
     path('api/bookings/', include('bookings.urls')),
+
+path('api/weather/', weather_api, name='api-weather'),
+    # Route explicite pour les recommandations
+    path(
+        'api/activities/recommendations/',
+        ActivityViewSet.as_view({'get': 'recommendations'}),
+        name='activity-recommendations'
+    ),
 
 ]
 

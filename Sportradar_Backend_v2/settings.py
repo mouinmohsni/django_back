@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'drf_spectacular',
     'rest_framework_simplejwt',
     'corsheaders',
+    'weather',
 
     # Nos applications
     'users.apps.UsersConfig',
