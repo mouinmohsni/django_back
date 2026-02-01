@@ -17,6 +17,7 @@ urlpatterns = [
     path('api/companies/', include('companies.urls')),
     path('api/activities/', include('activities.urls')),
     path('api/bookings/', include('bookings.urls')),
+
 ]
 
 # Gestion des fichiers médias en mode DEBUG

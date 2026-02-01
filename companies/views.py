@@ -75,10 +75,10 @@ class CompanyViewSet(viewsets.ModelViewSet):
         company = self.get_object()
 
         # Récupérer tous les coaches de cette entreprise
-        # customuser_set est la relation inverse de company dans le modèle User
+        # members est le related_name défini dans le modèle User
         from django.contrib.auth import get_user_model
         User = get_user_model()
-        coaches = company.customuser_set.filter(type=User.USER_TYPE_COACH, is_active=True)
+        coaches = company.members.filter(type=User.USER_TYPE_COACH, is_active=True)  # ✅ CORRIGÉ
 
         # Import local pour éviter l'importation circulaire
         from users.serializers import SimpleUserSerializer
@@ -104,7 +104,7 @@ class CompanyViewSet(viewsets.ModelViewSet):
         activities = company.activities.all()
 
         # Import local pour éviter l'importation circulaire
-        from activities.serializers import SimpleActivitySerializer
-        serializer = SimpleActivitySerializer(activities, many=True)
+        from activities.serializers import ActivitySerializer
+        serializer = ActivitySerializer(activities, many=True, context={'request': request})
 
         return Response(serializer.data)

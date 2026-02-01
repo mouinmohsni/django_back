@@ -76,16 +76,22 @@ class SimpleActivitySerializer(serializers.ModelSerializer):
     company = SimpleCompanySerializer(read_only=True)
     instructor = SimpleUserSerializer(read_only=True)
     average_score = serializers.SerializerMethodField()
+    participants_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Activity
         fields = [
             'id', 'name', 'description', 'category', 'image',
             'company', 'instructor', 'start_time', 'duration',
-            'price', 'level', 'average_score'
+            'price', 'level', 'average_score','participants_count', 'max_participants',
         ]
         read_only_fields = fields
 
     def get_average_score(self, obj: Activity) -> float | None:
         average = obj.ratings.aggregate(Avg('score')).get('score__avg')
         return round(average, 1) if average is not None else None
+
+    def get_participants_count(self, obj):
+        return obj.bookings.filter(status='confirmed').count()
+
+

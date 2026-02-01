@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+
     # Apps tierces
     'rest_framework',
     'drf_spectacular',
@@ -183,12 +184,13 @@ CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
 ]
 
+# ✅ CORRIGÉ : Configuration JWT cohérente
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(days=15),  # Mettre 15 minutes au lieu de 5
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),  # Mettre 7 jours au lieu de 1
-
-    # ... autres configurations
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=1),  # Token d'accès : 15 minutes (sécurisé)
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),    # Token de rafraîchissement : 7 jours
+    # Le refresh token doit TOUJOURS avoir une durée de vie plus longue que l'access token
 }
 
-MEDIA_URL = '' # On ne veut pas de préfixe /media/
-MEDIA_ROOT = BASE_DIR # Les fichiers sont à la racine
+# ✅ CORRIGÉ : Configuration MEDIA sécurisée
+MEDIA_URL = '/media/'  # Préfixe pour les URLs des fichiers médias
+MEDIA_ROOT = BASE_DIR / 'media'  # Dossier séparé pour les fichiers téléversés

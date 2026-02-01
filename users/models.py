@@ -7,16 +7,17 @@ from users.utils import random_avatar_name
 
 def get_default_preferences():
     return {
-        "level": "",          # ex: "beginner", "intermediate"
-        "location": "",       # ex: "Paris", "Lyon"
-        "objectives": []      # ex: ["perte de poids", "endurance cardio"]
+        "level": "",  # ex: "beginner", "intermediate"
+        "location": "",  # ex: "Paris", "Lyon"
+        "objectives": []  # ex: ["perte de poids", "endurance cardio"]
     }
+
 
 class CustomUser(AbstractUser):
     # --- Étape 1: Définir les NOUVEAUX types comme des variables de classe ---
     USER_TYPE_PERSONAL = 'personal'
     USER_TYPE_BUSINESS = 'business'
-    USER_TYPE_COACH = 'coach' # Le nouveau rôle que vous avez suggéré !
+    USER_TYPE_COACH = 'coach'  # Le nouveau rôle que vous avez suggéré !
 
     # --- Étape 2: Mettre à jour les choix ---
     USER_TYPE_CHOICES = (
@@ -27,6 +28,10 @@ class CustomUser(AbstractUser):
 
     # --- Champs du modèle ---
     email = models.EmailField(unique=True)
+
+    # ✅ AJOUT : Prénom et nom de famille
+    first_name = models.CharField(max_length=150, blank=True, verbose_name="Prénom")
+    last_name = models.CharField(max_length=150, blank=True, verbose_name="Nom de famille")
 
     # Le champ 'type' utilise maintenant nos nouveaux rôles.
     # On peut mettre 'personal' par défaut pour les inscriptions publiques.
@@ -62,4 +67,4 @@ class CustomUser(AbstractUser):
         verbose_name_plural = 'Utilisateurs'
 
     def __str__(self):
-        return f"{self.email} ({self.get_type_display()})" # get_type_display() est une méthode magique de Django
+        return f"{self.email} ({self.get_type_display()})"  # get_type_display() est une méthode magique de Django

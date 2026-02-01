@@ -1,14 +1,19 @@
 # users/views.py
 
 from rest_framework import generics, permissions, viewsets, status
-from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from rest_framework.response import Response
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, update_session_auth_hash
 from django.db.models import Q
 
 # On importe nos sérialiseurs
-from .serializers import RegisterSerializer, BusinessRegisterSerializer, UserSerializer, UserUpdateSerializer
+from .serializers import (
+
+
+    UserSerializer,
+    UserUpdateSerializer
+)
 # On importe nos nouvelles permissions personnalisées
 from .permissions import IsBusinessOwner, IsOwnerOrAdmin
 
@@ -16,16 +21,10 @@ User = get_user_model()
 
 
 # --- Vues d'Inscription (inchangées) ---
-class RegisterView(generics.CreateAPIView):
-    queryset = User.objects.all()
-    permission_classes = [permissions.AllowAny]
-    serializer_class = RegisterSerializer
 
 
-class BusinessRegisterView(generics.CreateAPIView):
-    queryset = User.objects.all()
-    permission_classes = [permissions.IsAdminUser]
-    serializer_class = BusinessRegisterSerializer
+
+
 
 
 # --- Le UserViewSet, version professionnelle ---
@@ -37,7 +36,6 @@ class UserViewSet(viewsets.ModelViewSet):
     - Un 'coach' ou 'personal' user ne voit que son propre profil.
     """
     serializer_class = UserSerializer
-
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_queryset(self):
@@ -94,7 +92,6 @@ class UserViewSet(viewsets.ModelViewSet):
         # 6. Cas par défaut (au cas où, ne devrait jamais être atteint si les types sont bien gérés)
         return User.objects.filter(pk=user.pk)
 
-    from .serializers import UserUpdateSerializer
     def get_serializer_class(self):
         """
         Retourne le sérialiseur approprié en fonction de l'action demandée.
@@ -111,12 +108,18 @@ class UserViewSet(viewsets.ModelViewSet):
         Définit les permissions requises pour chaque type d'action (créer, lister, etc.).
         """
         # L'action 'list' est pour voir la liste (GET /api/users/)
+        if self.action == 'create':
+            return [permissions.AllowAny()]
         if self.action == 'list':
-            # Tout utilisateur connecté peut lister (le queryset s'occupera de filtrer ce qu'il voit).
-            self.permission_classes = [permissions.IsAuthenticated]
-        # Ces actions concernent un objet spécifique (ex: GET /api/users/123/)
-        elif self.action in ['retrieve', 'update', 'partial_update', 'destroy']:
-            # Pour voir/modifier/supprimer un objet, on vérifie que c'est le sien ou qu'on est admin.
+            # ✅ MODIFIÉ : Tout le monde peut lister les coaches (même non connecté)
+            self.permission_classes = [permissions.AllowAny]
+        # Voir le détail d'un utilisateur
+        elif self.action == 'retrieve':
+            # ✅ MODIFIÉ : Tout le monde peut voir le profil d'un coach
+            self.permission_classes = [permissions.AllowAny]
+        # Modifier/supprimer un utilisateur
+        elif self.action in ['update', 'partial_update', 'destroy']:
+            # Seul le propriétaire ou un admin peut modifier
             self.permission_classes = [IsOwnerOrAdmin]
         # Actions personnalisées pour la gestion d'équipe
         elif self.action in ['add_coach', 'remove_coach']:
@@ -129,6 +132,10 @@ class UserViewSet(viewsets.ModelViewSet):
         elif self.action == 'activities':
             # Tout le monde peut voir les activités d'un coach (lecture publique)
             self.permission_classes = [permissions.AllowAny]
+        # ✅ NOUVEAU : Actions pour les coaches (quitter/rejoindre une entreprise)
+        elif self.action in ['leave_company', 'join_company']:
+            # Seul un coach connecté peut faire ces actions
+            self.permission_classes = [permissions.IsAuthenticated]
         else:
             # Par sécurité, si une action n'est pas listée, on la réserve aux admins.
             self.permission_classes = [permissions.IsAdminUser]
@@ -145,50 +152,6 @@ class UserViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(request.user)
         return Response(serializer.data)
 
-    @action(detail=False, methods=['post'], url_path='add-coach')
-    def add_coach(self, request):
-        """
-        Permet à un propriétaire ('business') de créer un compte 'coach' et de le lier à son entreprise.
-        """
-        owner = request.user
-        if not owner.company:
-            return Response({'detail': "Vous devez d'abord créer le profil de votre entreprise."},
-                            status=status.HTTP_400_BAD_REQUEST)
-
-        serializer = RegisterSerializer(data=request.data)
-        if serializer.is_valid():
-            # Le RegisterSerializer crée un utilisateur 'personal' par défaut.
-            coach_user = serializer.save()
-            # Nous le mettons à jour pour en faire un coach de la bonne entreprise.
-            coach_user.type = User.USER_TYPE_COACH
-            coach_user.company = owner.company
-            coach_user.save()
-            # On renvoie les données du coach formatées par le UserSerializer.
-            return Response(UserSerializer(coach_user).data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    @action(detail=True, methods=['post'], url_path='remove-coach')
-    def remove_coach(self, request, pk=None):
-        """
-        Permet à un propriétaire de dissocier un coach de son entreprise.
-        L'URL sera /api/users/{id_du_coach}/remove-coach/
-        """
-        owner = request.user
-        if not owner.company:
-            return Response({'detail': "Vous n'avez pas d'entreprise."}, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            # On s'assure que le coach à dissocier existe et appartient bien à l'entreprise du propriétaire.
-            coach_to_remove = User.objects.get(pk=pk, company=owner.company, type=User.USER_TYPE_COACH)
-        except User.DoesNotExist:
-            return Response({'detail': 'Ce coach est introuvable ou ne fait pas partie de votre entreprise.'},
-                            status=status.HTTP_404_NOT_FOUND)
-
-        # On ne supprime pas le coach, on le détache de l'entreprise.
-        coach_to_remove.company = None
-        coach_to_remove.save()
-        return Response({'status': f"Le coach {coach_to_remove.username} a été dissocié de votre entreprise."},
-                        status=status.HTTP_200_OK)
 
     # ============================================
     # 🆕 NOUVELLE ACTION : Récupérer les activités d'un coach
@@ -214,7 +177,38 @@ class UserViewSet(viewsets.ModelViewSet):
         activities = user.instructed_activities.all()
 
         # Import local pour éviter l'importation circulaire
-        from activities.serializers import SimpleActivitySerializer
-        serializer = SimpleActivitySerializer(activities, many=True)
+        from activities.serializers import ActivitySerializer
+        serializer = ActivitySerializer(activities, many=True)
+        print("===========================",serializer.data)
 
         return Response(serializer.data)
+
+
+
+# ============================================
+# 🆕 FONCTION INDÉPENDANTE : Changement de mot de passe
+# ============================================
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def change_password(request):
+    """
+    Permet à un utilisateur connecté de changer son mot de passe.
+    URL : POST /auth/change-password/
+
+    Body : {
+        "old_password": "ancien_mot_de_passe",
+        "new_password": "nouveau_mot_de_passe"
+    }
+    """
+    user = request.user
+    old_password = request.data.get('old_password')
+    new_password = request.data.get('new_password')
+
+    if not user.check_password(old_password):
+        return Response({'old_password': ['Mot de passe incorrect']}, status=400)
+
+    user.set_password(new_password)
+    user.save()
+    update_session_auth_hash(request, user)  # Garde la session active
+
+    return Response({'detail': 'Mot de passe modifié avec succès'})

@@ -27,7 +27,7 @@ class Booking(models.Model):
     attendee = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE, # Si l'utilisateur supprime son compte, ses réservations aussi.
-        related_name='bookings',
+        related_name='bookings_as_attendee',  # ✅ CORRIGÉ : évite le conflit avec activity.bookings
         verbose_name="Participant"
     )
 

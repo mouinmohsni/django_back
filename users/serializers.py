@@ -2,6 +2,8 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
+
+from companies.models import Company
 from users.models import CustomUser
 
 User = get_user_model()
@@ -62,15 +64,64 @@ class BusinessRegisterSerializer(serializers.ModelSerializer):
 
 # --- SERIALIZER PRINCIPAL UTILISATEUR ---
 class UserSerializer(serializers.ModelSerializer):
-    """
-    Serializer principal pour afficher les informations d'un utilisateur.
-    N'inclut PAS la liste des activités pour éviter l'importation circulaire.
-    Utiliser l'endpoint /api/users/{id}/activities/ pour récupérer les activités.
-    """
+    # Champ virtuel pour recevoir les informations de l'entreprise lors de l'inscription
+    company_info = serializers.JSONField(required=False, write_only=True)
+    password = serializers.CharField(write_only=True, required=True)
+
     class Meta:
         model = User
-        fields = ('id', 'email', 'username', 'type', 'preferences', 'avatar', 'is_staff', 'company')
-        read_only_fields = fields
+        fields = [
+            'id',
+            'email',
+            'username',
+            'password',
+            'first_name',
+            'last_name',
+            'type',
+            'company',
+            'avatar',
+            'preferences',
+            'is_staff',
+            'company_info'
+        ]
+        read_only_fields = ['company', 'is_staff']
+
+    def create(self, validated_data):
+        # 1. Extraire les données de l'entreprise si elles existent
+        company_info = validated_data.pop('company_info', None)
+        user_type = validated_data.get('type', 'personal')
+
+        # 2. Utiliser create_user pour gérer automatiquement le hachage du mot de passe
+        # On extrait le mot de passe pour le passer séparément si nécessaire,
+        # mais create_user s'en occupe très bien.
+        user = User.objects.create_user(**validated_data)
+
+        # 3. Logique spécifique pour le type BUSINESS
+        if user_type == 'business' and company_info:
+            try:
+                # Création de l'entreprise avec les données fournies par le frontend
+                new_company = Company.objects.create(
+                    name=company_info.get('name', f"Entreprise de {user.username}"),
+                    address=company_info.get('address', ''),
+                    phone_number=company_info.get('phone_number', ''),
+                    description=company_info.get('description', '')
+                )
+                # Lier l'entreprise à l'utilisateur
+                user.company = new_company
+                user.save()
+            except Exception as e:
+                # On log l'erreur mais on ne bloque pas forcément la création de l'utilisateur
+                print(f"Erreur lors de la création de l'entreprise : {e}")
+
+        return user
+
+    def update(self, instance, validated_data):
+        # Gestion sécurisée du mot de passe lors de la mise à jour
+        password = validated_data.pop('password', None)
+        if password:
+            instance.set_password(password)
+
+        return super().update(instance, validated_data)
 
 
 # --- SERIALIZER SIMPLE POUR LES OBJETS IMBRIQUÉS ---
@@ -81,7 +132,7 @@ class SimpleUserSerializer(serializers.ModelSerializer):
     """
     class Meta:
         model = User
-        fields = ('id', 'email', 'username', 'avatar', 'type')
+        fields = ('id', 'email', 'username', 'first_name', 'last_name', 'avatar', 'type')  # ✅ AJOUT
         read_only_fields = fields
 
 
@@ -92,4 +143,4 @@ class UserUpdateSerializer(serializers.ModelSerializer):
     """
     class Meta:
         model = CustomUser
-        fields = ['username', 'preferences', 'avatar']
+        fields = ['username', 'first_name', 'last_name', 'preferences', 'avatar']  # ✅ AJOUT

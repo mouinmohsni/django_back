@@ -4,6 +4,11 @@ from rest_framework import viewsets, permissions
 from .models import Activity
 from .serializers import ActivitySerializer
 from users.permissions import IsBusinessOwner # Assurez-vous que ce chemin est correct
+from django.utils import timezone
+
+# À l'intérieur de votre ViewSet ou dans get_queryset :
+queryset = Activity.objects.filter(is_public=True, start_time__gt=timezone.now()).order_by('start_time')
+
 
 # --- Permission Personnalisée pour les Activités ---
 class IsActivityCompanyOwner(permissions.BasePermission):
@@ -11,7 +16,7 @@ class IsActivityCompanyOwner(permissions.BasePermission):
         return request.user.is_authenticated and obj.company == request.user.company
 
 class ActivityViewSet(viewsets.ModelViewSet):
-    queryset = Activity.objects.filter(is_public=True).order_by('start_time')
+    queryset = Activity.objects.filter(is_public=True, start_time__gt=timezone.now()).order_by('start_time')
     serializer_class = ActivitySerializer
 
     def get_permissions(self):
