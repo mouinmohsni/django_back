@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/6.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
-
+import os
 from pathlib import Path
 from datetime import timedelta
 
@@ -195,3 +195,12 @@ SIMPLE_JWT = {
 # ✅ CORRIGÉ : Configuration MEDIA sécurisée
 MEDIA_URL = '/media/'  # Préfixe pour les URLs des fichiers médias
 MEDIA_ROOT = BASE_DIR / 'media'  # Dossier séparé pour les fichiers téléversés
+
+
+
+# Les autres variables (AWS, OPENWEATHER, etc.) seront lues depuis le .env si elles existent, sinon ignorées.
+OPENWEATHER_API_KEY = os.getenv('OPENWEATHER_API_KEY')
+AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
+AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_STORAGE_BUCKET_NAME')
+AWS_S3_REGION_NAME = os.getenv('AWS_S3_REGION_NAME')
