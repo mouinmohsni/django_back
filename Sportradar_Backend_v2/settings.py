@@ -13,6 +13,8 @@ import os
 from pathlib import Path
 from datetime import timedelta
 
+import dj_database_url
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -21,12 +23,40 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-4*t6ompn80j49jnfple^6=(4%h2!@ob7ccjkjvfffz16qh9t-2'
+
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-une-cle-locale-par-defaut')
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 ALLOWED_HOSTS = []
+
+ # Importer le paquet
+
+# ...
+
+# Détecter si on est en production sur Render
+# Render définit automatiquement la variable d'environnement RENDER
+IS_PRODUCTION = 'RENDER' in os.environ
+
+if IS_PRODUCTION:
+    # En production, utiliser la base de données PostgreSQL de Render
+    DATABASES = {
+        'default': dj_database_url.config(
+            # L'URL est récupérée depuis la variable d'environnement DATABASE_URL
+            conn_max_age=600,
+            ssl_require=True # Forcer la connexion sécurisée
+        )
+    }
+else:
+    # En développement (local), continuer à utiliser SQLite
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 
 # Application definition
@@ -103,12 +133,7 @@ WSGI_APPLICATION = 'Sportradar_Backend_v2.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
+
 
 
 # Password validation
@@ -176,13 +201,15 @@ SPECTACULAR_SETTINGS = {
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000", # L'adresse de votre front-end React
     "http://127.0.0.1:3000",
-    "http://localhost:5173"
+    "http://localhost:5173",
+    "https://sportradar-front.onrender.com/"
 ]
 
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
     "http://localhost:5173",
+    "https://sportradar-front.onrender.com/"
 ]
 
 # ✅ CORRIGÉ : Configuration JWT cohérente
