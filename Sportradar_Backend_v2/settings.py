@@ -27,10 +27,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-une-cle-locale-par-defaut')
 
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
 
-ALLOWED_HOSTS = []
+
 
  # Importer le paquet
 
@@ -39,6 +37,9 @@ ALLOWED_HOSTS = []
 # Détecter si on est en production sur Render
 # Render définit automatiquement la variable d'environnement RENDER
 IS_PRODUCTION = 'RENDER' in os.environ
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = not IS_PRODUCTION
+
 
 if IS_PRODUCTION:
     # En production, utiliser la base de données PostgreSQL de Render
@@ -213,6 +214,14 @@ CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
     "https://sportradar-front.onrender.com"
 ]
+ALLOWED_HOSTS_STRING = os.getenv('ALLOWED_HOSTS', '')
+ALLOWED_HOSTS = ALLOWED_HOSTS_STRING.split(',') if ALLOWED_HOSTS_STRING else []
+
+# Ajoutez le domaine de Render si la variable d'environnement n'est pas définie
+if IS_PRODUCTION:
+    RENDER_HOSTNAME = os.getenv('RENDER_EXTERNAL_HOSTNAME')
+    if RENDER_HOSTNAME and RENDER_HOSTNAME not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(RENDER_HOSTNAME)
 
 # ✅ CORRIGÉ : Configuration JWT cohérente
 SIMPLE_JWT = {
