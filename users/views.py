@@ -64,30 +64,20 @@ class UserViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         """
-        Filtre la liste des utilisateurs en fonction du rôle de l'utilisateur connecté.
-        La logique est conservée mais légèrement optimisée.
+        Filtre la liste des utilisateurs.
+        - Si l'utilisateur est authentifié, il voit tout le monde.
+        - Sinon, il ne voit personne sur cet endpoint.
         """
         user = self.request.user
         qs = super().get_queryset()
 
-        if not user.is_authenticated:
-            # Les visiteurs ne voient que les coachs.
-            return qs.filter(type=User.USER_TYPE_COACH)
+        if user.is_authenticated:
+            # L'utilisateur est connecté, il peut voir tout le monde.
+            return qs
 
-        if user.is_staff:
-            return qs  # L'admin voit tout.
-
-        if user.type == User.USER_TYPE_BUSINESS and user.company:
-            # Le propriétaire voit son profil et les coachs de son entreprise.
-            return qs.filter(Q(pk=user.pk) | Q(company=user.company, type=User.USER_TYPE_COACH))
-
-        if user.type == User.USER_TYPE_PERSONAL:
-            # Le client voit son profil et tous les coachs.
-            return qs.filter(Q(pk=user.pk) | Q(type=User.USER_TYPE_COACH))
-
-        # Par défaut (pour un coach ou autre), ne renvoyer que son propre profil
-        # si aucune autre règle ne s'applique.
-        return qs.filter(pk=user.pk)
+        # Le visiteur non connecté ne voit personne sur /api/users/.
+        # Il doit utiliser l'endpoint /api/coaches/.
+        return qs.none()
 
     def perform_destroy(self, instance):
         """ Surcharge pour une "suppression douce" (désactivation). """
@@ -150,3 +140,21 @@ def change_password(request):
     update_session_auth_hash(request, user)  # Maintient la session de l'utilisateur active
 
     return Response({'detail': 'Mot de passe modifié avec succès.'}, status=status.HTTP_200_OK)
+
+
+# ===================================================================
+# == NOUVEAU VIEWSET DÉDIÉ AUX COACHS
+# ===================================================================
+class CoachViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Un ViewSet public en lecture seule pour lister tous les utilisateurs
+    ayant le rôle de 'coach'.
+    """
+    # Le queryset filtre directement pour ne garder que les coachs.
+    queryset = User.objects.filter(type=User.USER_TYPE_COACH).order_by('first_name')
+
+    # On utilise le serializer de lecture pour ne pas exposer de données sensibles.
+    serializer_class = UserReadSerializer
+
+    # Tout le monde peut accéder à cette liste.
+    permission_classes = [permissions.AllowAny]

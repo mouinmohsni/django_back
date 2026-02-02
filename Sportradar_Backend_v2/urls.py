@@ -6,7 +6,13 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 from activities.views import ActivityViewSet
+from users.views import CoachViewSet
 from weather.views import weather_api
+
+from rest_framework.routers import DefaultRouter
+coach_router = DefaultRouter()
+coach_router.register(r'coaches', CoachViewSet, basename='coach')
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -20,8 +26,9 @@ urlpatterns = [
     path('api/companies/', include('companies.urls')),
     path('api/activities/', include('activities.urls')),
     path('api/bookings/', include('bookings.urls')),
+    path('api/', include(coach_router.urls)),
 
-path('api/weather/', weather_api, name='api-weather'),
+    path('api/weather/', weather_api, name='api-weather'),
     # Route explicite pour les recommandations
     path(
         'api/activities/recommendations/',
