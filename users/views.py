@@ -1,212 +1,152 @@
 # users/views.py
-
-from rest_framework import generics, permissions, viewsets, status
+from django.contrib.auth.password_validation import validate_password
+from rest_framework import viewsets, permissions, status
+from rest_framework import serializers # <--- AJOUTEZ CETTE LIGNE
 from rest_framework.decorators import action, api_view, permission_classes
-from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.contrib.auth import get_user_model, update_session_auth_hash
 from django.db.models import Q
 
-# On importe nos sérialiseurs
+# On importe les serializers renommés et spécialisés
 from .serializers import (
-
-
-    UserSerializer,
+    UserCreateSerializer,
+    UserReadSerializer,
     UserUpdateSerializer
 )
-# On importe nos nouvelles permissions personnalisées
-from .permissions import IsBusinessOwner, IsOwnerOrAdmin
+from .permissions import IsOwnerOrAdmin
 
 User = get_user_model()
 
 
-# --- Vues d'Inscription (inchangées) ---
-
-
-
-
-
-
-# --- Le UserViewSet, version professionnelle ---
 class UserViewSet(viewsets.ModelViewSet):
     """
     ViewSet pour gérer les utilisateurs avec une logique de rôles et d'entreprise.
-    - Un admin voit tout.
-    - Un 'business' user voit son équipe (les coachs actifs de son entreprise).
-    - Un 'coach' ou 'personal' user ne voit que son propre profil.
+    - La création utilise UserCreateSerializer.
+    - La lecture (liste/détail) utilise UserReadSerializer.
+    - La mise à jour utilise UserUpdateSerializer.
     """
-    serializer_class = UserSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    queryset = User.objects.all().order_by('username')
 
-    def get_queryset(self):
-        """
-        Cette méthode est le cœur de notre logique de visibilité.
-        Elle filtre la liste des utilisateurs que chaque rôle a le droit de voir.
-        """
-        user = self.request.user
-
-        # 1. Cas du visiteur non connecté
-        if not user.is_authenticated:
-            return User.objects.filter(type=User.USER_TYPE_COACH)
-
-        # 2. Cas de l'administrateur (voit tout)
-        if user.is_staff:
-            return User.objects.all()
-
-        # 3. Cas du propriétaire d'entreprise
-        if user.type == User.USER_TYPE_BUSINESS and user.company:
-            # Il voit son propre profil ET les coachs ACTIFS de son entreprise.
-            return User.objects.filter(
-                Q(pk=user.pk) |
-                Q(company=user.company, is_active=True, type=User.USER_TYPE_COACH)
-            )
-
-        # 4. NOUVEAU CAS : Le coach
-        if user.type == User.USER_TYPE_COACH:
-            # Il voit son propre profil ET les participants confirmés à SES activités.
-
-            # On récupère les IDs de tous les participants (attendees) des activités
-            # où l'utilisateur actuel est l'instructeur.
-            participant_ids = User.objects.filter(
-                bookings_as_attendee__activity__instructor=user,
-                bookings_as_attendee__status='confirmed'
-            ).values_list('id', flat=True)
-
-            # Le coach voit :
-            # - Lui-même
-            # - Tous les autres coachs (pour la collaboration)
-            # - Les participants à ses cours
-            return User.objects.filter(
-                Q(pk=user.pk) |  # Soit c'est lui-même
-                Q(type=User.USER_TYPE_COACH) |  # Soit c'est un autre coach
-                Q(id__in=list(set(participant_ids)))  # Soit c'est un participant de ses cours
-            ).distinct()
-
-        # 5. NOUVEAU CAS : Le client ('personal')
-        if user.type == User.USER_TYPE_PERSONAL:
-            # Il voit son propre profil ET tous les coachs.
-            return User.objects.filter(
-                Q(pk=user.pk) | Q(type=User.USER_TYPE_COACH)
-            )
-
-        # 6. Cas par défaut (au cas où, ne devrait jamais être atteint si les types sont bien gérés)
-        return User.objects.filter(pk=user.pk)
+    # Définition des permissions par défaut. On les précisera dans get_permissions.
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
     def get_serializer_class(self):
         """
-        Retourne le sérialiseur approprié en fonction de l'action demandée.
+        Retourne le sérialiseur approprié en fonction de l'action.
+        C'est la méthode la plus propre pour gérer plusieurs serializers.
         """
-        # Si l'action est une mise à jour (PUT ou PATCH)
+        if self.action == 'create':
+            return UserCreateSerializer
         if self.action in ['update', 'partial_update']:
             return UserUpdateSerializer
-
-        # Pour toutes les autres actions (list, retrieve, create...), on utilise le sérialiseur par défaut.
-        return UserSerializer
+        # Pour 'list', 'retrieve', 'me', et toutes les autres actions de lecture,
+        # on utilise le serializer sécurisé qui n'expose pas de données sensibles.
+        return UserReadSerializer
 
     def get_permissions(self):
         """
-        Définit les permissions requises pour chaque type d'action (créer, lister, etc.).
+        Définit les permissions requises pour chaque action.
         """
-        # L'action 'list' est pour voir la liste (GET /api/users/)
         if self.action == 'create':
-            return [permissions.AllowAny()]
-        if self.action == 'list':
-            # ✅ MODIFIÉ : Tout le monde peut lister les coaches (même non connecté)
+            # Tout le monde peut tenter de s'inscrire.
             self.permission_classes = [permissions.AllowAny]
-        # Voir le détail d'un utilisateur
-        elif self.action == 'retrieve':
-            # ✅ MODIFIÉ : Tout le monde peut voir le profil d'un coach
-            self.permission_classes = [permissions.AllowAny]
-        # Modifier/supprimer un utilisateur
         elif self.action in ['update', 'partial_update', 'destroy']:
-            # Seul le propriétaire ou un admin peut modifier
+            # Seul le propriétaire du compte ou un admin peut modifier/supprimer.
             self.permission_classes = [IsOwnerOrAdmin]
-        # Actions personnalisées pour la gestion d'équipe
-        elif self.action in ['add_coach', 'remove_coach']:
-            # Seul un propriétaire d'entreprise peut faire ces actions.
-            self.permission_classes = [IsBusinessOwner]
-        # Action pour récupérer son propre profil
         elif self.action == 'me':
+            # Seul un utilisateur authentifié peut accéder à son propre profil via /me/.
             self.permission_classes = [permissions.IsAuthenticated]
-        # NOUVEAU : Action pour récupérer les activités d'un coach
-        elif self.action == 'activities':
-            # Tout le monde peut voir les activités d'un coach (lecture publique)
-            self.permission_classes = [permissions.AllowAny]
-        # ✅ NOUVEAU : Actions pour les coaches (quitter/rejoindre une entreprise)
 
-        else:
-            # Par sécurité, si une action n'est pas listée, on la réserve aux admins.
-            self.permission_classes = [permissions.IsAdminUser]
+        # Pour les autres actions ('list', 'retrieve'), on garde la permission par défaut
+        # de la classe (IsAuthenticatedOrReadOnly).
         return super().get_permissions()
 
+    def get_queryset(self):
+        """
+        Filtre la liste des utilisateurs en fonction du rôle de l'utilisateur connecté.
+        La logique est conservée mais légèrement optimisée.
+        """
+        user = self.request.user
+        qs = super().get_queryset()
+
+        if not user.is_authenticated:
+            # Les visiteurs ne voient que les coachs.
+            return qs.filter(type=User.USER_TYPE_COACH)
+
+        if user.is_staff:
+            return qs  # L'admin voit tout.
+
+        if user.type == User.USER_TYPE_BUSINESS and user.company:
+            # Le propriétaire voit son profil et les coachs de son entreprise.
+            return qs.filter(Q(pk=user.pk) | Q(company=user.company, type=User.USER_TYPE_COACH))
+
+        if user.type == User.USER_TYPE_PERSONAL:
+            # Le client voit son profil et tous les coachs.
+            return qs.filter(Q(pk=user.pk) | Q(type=User.USER_TYPE_COACH))
+
+        # Par défaut (pour un coach ou autre), ne renvoyer que son propre profil
+        # si aucune autre règle ne s'applique.
+        return qs.filter(pk=user.pk)
+
     def perform_destroy(self, instance):
-        """ Surcharge de la suppression pour faire une "suppression douce". """
+        """ Surcharge pour une "suppression douce" (désactivation). """
         instance.is_active = False
         instance.save()
+        # On pourrait aussi anonymiser l'email pour le RGPD, par exemple.
+        # instance.email = f"deleted_{instance.id}@example.com"
 
-    @action(detail=False, methods=['get'], url_path='me', permission_classes=[permissions.IsAuthenticated])
+    @action(detail=False, methods=['get'], url_path='me')
     def me(self, request):
-        """ Une URL pratique (/api/users/me/) qui renvoie toujours les données de l'utilisateur connecté. """
+        """
+        Endpoint pratique (/api/users/me/) qui renvoie les données de l'utilisateur connecté.
+        Utilise le serializer de lecture (UserReadSerializer).
+        """
         serializer = self.get_serializer(request.user)
         return Response(serializer.data)
 
-
-    # ============================================
-    # 🆕 NOUVELLE ACTION : Récupérer les activités d'un coach
-    # ============================================
-    @action(detail=True, methods=['get'], url_path='activities')
-    def activities(self, request, pk=None):
+    @action(detail=False, methods=['put', 'patch'], url_path='me/update')
+    def update_me(self, request, *args, **kwargs):
         """
-        Endpoint pour récupérer toutes les activités d'un coach.
-        URL : GET /api/users/{user_id}/activities/
-
-        Retourne la liste des activités où cet utilisateur est l'instructeur.
+        Endpoint pour que l'utilisateur connecté mette à jour son propre profil.
+        Utilise le serializer de mise à jour (UserUpdateSerializer).
         """
-        user = self.get_object()
-
-        # Vérifier que l'utilisateur est un coach
-        if user.type != User.USER_TYPE_COACH:
-            return Response(
-                {"detail": "Cet utilisateur n'est pas un coach."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        # Récupérer les activités où cet utilisateur est l'instructeur
-        activities = user.instructed_activities.all()
-
-        # Import local pour éviter l'importation circulaire
-        from activities.serializers import ActivitySerializer
-        serializer = ActivitySerializer(activities, many=True)
-        print("===========================",serializer.data)
-
-        return Response(serializer.data)
+        user = request.user
+        serializer = self.get_serializer(user, data=request.data, partial=True)  # partial=True pour PATCH
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        # On renvoie les données mises à jour avec le serializer de LECTURE pour être cohérent.
+        read_serializer = UserReadSerializer(user)
+        return Response(read_serializer.data)
 
 
-
-# ============================================
-# 🆕 FONCTION INDÉPENDANTE : Changement de mot de passe
-# ============================================
+# ===================================================================
+# == VUE INDÉPENDANTE POUR LE CHANGEMENT DE MOT DE PASSE
+# ===================================================================
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def change_password(request):
     """
     Permet à un utilisateur connecté de changer son mot de passe.
-    URL : POST /auth/change-password/
-
-    Body : {
-        "old_password": "ancien_mot_de_passe",
-        "new_password": "nouveau_mot_de_passe"
-    }
     """
     user = request.user
     old_password = request.data.get('old_password')
     new_password = request.data.get('new_password')
 
+    if not old_password or not new_password:
+        return Response({'error': 'Les champs "old_password" et "new_password" sont requis.'}, status=400)
+
     if not user.check_password(old_password):
-        return Response({'old_password': ['Mot de passe incorrect']}, status=400)
+        return Response({'old_password': ['Mot de passe actuel incorrect.']}, status=400)
+
+    # Valider le nouveau mot de passe avec les validateurs de Django
+    try:
+        validate_password(new_password, user)
+    except serializers.ValidationError as e:
+        return Response({'new_password': e.messages}, status=400)
 
     user.set_password(new_password)
     user.save()
-    update_session_auth_hash(request, user)  # Garde la session active
+    update_session_auth_hash(request, user)  # Maintient la session de l'utilisateur active
 
-    return Response({'detail': 'Mot de passe modifié avec succès'})
+    return Response({'detail': 'Mot de passe modifié avec succès.'}, status=status.HTTP_200_OK)
