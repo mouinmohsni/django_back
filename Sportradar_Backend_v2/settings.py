@@ -204,14 +204,14 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000", # L'adresse de votre front-end React
     "http://127.0.0.1:3000",
     "http://localhost:5173",
-    "https://sportradar-front.onrender.com/"
+    "https://sportradar-front.onrender.com"
 ]
 
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
     "http://localhost:5173",
-    "https://sportradar-front.onrender.com/"
+    "https://sportradar-front.onrender.com"
 ]
 
 # ✅ CORRIGÉ : Configuration JWT cohérente
