@@ -5,7 +5,7 @@ from rest_framework import serializers
 from activities.models import Activity
 from .models import Booking
 from activities.serializers import ActivitySerializer # Pour afficher les détails de l'activité
-from users.serializers import UserSerializer # Pour afficher les détails du participant
+from users.serializers import  UserReadSerializer  # Pour afficher les détails du participant
 
 class BookingSerializer(serializers.ModelSerializer):
     """
@@ -13,7 +13,7 @@ class BookingSerializer(serializers.ModelSerializer):
     Affiche les détails de l'activité et du participant.
     """
     activity = ActivitySerializer(read_only=True)
-    attendee = UserSerializer(read_only=True)
+    attendee = UserReadSerializer (read_only=True)
 
     class Meta:
         model = Booking
