@@ -172,6 +172,8 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles' )
+
 # --- Modèle d'Authentification Personnalisé ---
 # On dit à Django d'utiliser notre classe CustomUser de l'application users
 # pour gérer tout ce qui concerne les utilisateurs.
