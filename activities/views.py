@@ -1,6 +1,5 @@
 # activities/views.py
 
-from django.db.models import Q
 from django.utils import timezone
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
@@ -34,8 +33,16 @@ class ActivityViewSet(viewsets.ModelViewSet):
     # 1. Le queryset de base inclut TOUTES les activités.
     #    Ceci est crucial pour que les opérations comme 'create', 'update', 'delete'
     #    puissent fonctionner correctement en se basant sur l'ID (pk).
-    queryset = Activity.objects.all().order_by('start_time')
     serializer_class = ActivitySerializer
+
+    queryset = Activity.objects.all().select_related(
+        'company',
+        'instructor'
+    ).prefetch_related(
+        'ratings',
+        'bookings'
+    ).order_by('start_time')
+
 
     def get_queryset(self):
         """
