@@ -1,6 +1,6 @@
 """
 Django settings for Sportradar_Backend_v2 project.
-Refactored for clarity and robustness.
+Refactored for clarity and robustness with Cloudinary integration.
 """
 import os
 from pathlib import Path
@@ -11,26 +11,19 @@ import dj_database_url
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # --- 2. Gestion de l'environnement et des secrets ---
-# On détecte l'environnement de production UNE SEULE FOIS.
 IS_PRODUCTION = 'RENDER' in os.environ
-
-# On charge la clé secrète depuis les variables d'environnement.
-# La valeur par défaut est NON SÉCURISÉE et ne doit être utilisée qu'en local.
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-une-cle-locale-par-defaut-NON-SECURISEE')
-
-# Le mode DEBUG est l'inverse de la production.
 DEBUG = not IS_PRODUCTION
 
 # --- 3. Configuration des hôtes (ALLOWED_HOSTS) ---
 ALLOWED_HOSTS = []
 if IS_PRODUCTION:
-    # En production, on autorise le domaine externe de Render.
     RENDER_EXTERNAL_HOSTNAME = os.getenv('RENDER_EXTERNAL_HOSTNAME')
     if RENDER_EXTERNAL_HOSTNAME:
         ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 else:
-    # En développement, on autorise localhost.
-    ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+    # En développement, autoriser tout le monde est acceptable car DEBUG=True.
+    ALLOWED_HOSTS = ['*']
 
 # --- 4. Applications installées ---
 INSTALLED_APPS = [
@@ -40,7 +33,7 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'django.contrib.staticfiles',
+    # 'django.contrib.staticfiles', # Déplacé pour l'ordre de Cloudinary
 
     # Apps tierces
     'rest_framework',
@@ -48,7 +41,12 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'corsheaders',
 
-    # Nos applications (avec la configuration explicite)
+    # Configuration Cloudinary (doit être avant 'staticfiles')
+    'cloudinary_storage',
+    'django.contrib.staticfiles', # Garder cette ligne ici
+    'cloudinary',
+
+    # Nos applications
     'users.apps.UsersConfig',
     'companies.apps.CompaniesConfig',
     'activities.apps.ActivitiesConfig',
@@ -71,7 +69,6 @@ MIDDLEWARE = [
 # --- 6. URLs et Templates ---
 ROOT_URLCONF = 'Sportradar_Backend_v2.urls'
 WSGI_APPLICATION = 'Sportradar_Backend_v2.wsgi.application'
-
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -89,19 +86,9 @@ TEMPLATES = [
 
 # --- 7. Base de données ---
 if IS_PRODUCTION:
-    DATABASES = {
-        'default': dj_database_url.config(
-            conn_max_age=600,
-            ssl_require=True
-        )
-    }
+    DATABASES = {'default': dj_database_url.config(conn_max_age=600, ssl_require=True)}
 else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
+    DATABASES = {'default': {'ENGINE': 'django.db.backends.sqlite3', 'NAME': BASE_DIR / 'db.sqlite3'}}
 
 # --- 8. Validation des mots de passe ---
 AUTH_PASSWORD_VALIDATORS = [
@@ -120,61 +107,32 @@ USE_TZ = True
 # --- 10. Fichiers statiques et médias ---
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_URL = '/media/' # Garder MEDIA_URL est une bonne pratique
 
 # --- 11. Modèle d'utilisateur personnalisé ---
 AUTH_USER_MODEL = 'users.CustomUser'
 
 # --- 12. Configuration des frameworks (DRF, JWT, etc.) ---
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ],
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
-    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': ['rest_framework_simplejwt.authentication.JWTAuthentication'],
+    'DEFAULT_PERMISSION_CLASSES': ['rest_framework.permissions.IsAuthenticatedOrReadOnly'],
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
-
-SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(days=1),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
-}
-
-SPECTACULAR_SETTINGS = {
-    'TITLE': 'SportRadar API',
-    'DESCRIPTION': 'API pour le projet SportRadar',
-    'VERSION': '1.0.0',
-    'SERVE_INCLUDE_SCHEMA': False,
-}
-
-JAZZMIN_SETTINGS = {
-    'site_title': 'SportRadar Admin',
-    'welcome_sign': 'Bienvenue dans SportRadar',
-    'show_sidebar': True,
-    'navigation_expanded': True,
-}
+SIMPLE_JWT = {"ACCESS_TOKEN_LIFETIME": timedelta(days=1), "REFRESH_TOKEN_LIFETIME": timedelta(days=7)}
+SPECTACULAR_SETTINGS = {'TITLE': 'SportRadar API', 'DESCRIPTION': 'API pour le projet SportRadar', 'VERSION': '1.0.0', 'SERVE_INCLUDE_SCHEMA': False}
+JAZZMIN_SETTINGS = {'site_title': 'SportRadar Admin', 'welcome_sign': 'Bienvenue dans SportRadar', 'show_sidebar': True, 'navigation_expanded': True}
 
 # --- 13. CORS et CSRF ---
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-    "http://localhost:5173",
-    "https://sportradar-front.onrender.com",
-]
-CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-    "http://localhost:5173",
-    "https://sportradar-front.onrender.com",
-]
+CORS_ALLOWED_ORIGINS = ["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:5173", "https://sportradar-front.onrender.com"]
+CSRF_TRUSTED_ORIGINS = ["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:5173", "https://sportradar-front.onrender.com"]
 
-# --- 14. Clés d'API externes ---
-# Ces clés seront lues depuis les variables d'environnement en production.
-OPENWEATHER_API_KEY = os.getenv('OPENWEATHER_API_KEY' )
-AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
-AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
-AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_STORAGE_BUCKET_NAME')
-AWS_S3_REGION_NAME = os.getenv('AWS_S3_REGION_NAME')
+# --- 14. Configuration de Cloudinary pour le stockage des médias ---
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': os.getenv('CLOUDINARY_CLOUD_NAME' ),
+    'API_KEY': os.getenv('CLOUDINARY_API_KEY'),
+    'API_SECRET': os.getenv('CLOUDINARY_API_SECRET'),
+}
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+
+# --- 15. Clés d'API externes ---
+OPENWEATHER_API_KEY = os.getenv('OPENWEATHER_API_KEY')
