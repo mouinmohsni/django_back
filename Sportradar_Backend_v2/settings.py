@@ -22,7 +22,6 @@ if IS_PRODUCTION:
     if RENDER_EXTERNAL_HOSTNAME:
         ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 else:
-    # En développement, autoriser tout le monde est acceptable car DEBUG=True.
     ALLOWED_HOSTS = ['*']
 
 # --- 4. Applications installées ---
@@ -33,20 +32,13 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    # 'django.contrib.staticfiles', # Déplacé pour l'ordre de Cloudinary
-
-    # Apps tierces
+    'cloudinary_storage',
+    'django.contrib.staticfiles',
+    'cloudinary',
     'rest_framework',
     'drf_spectacular',
     'rest_framework_simplejwt',
     'corsheaders',
-
-    # Configuration Cloudinary (doit être avant 'staticfiles')
-    'cloudinary_storage',
-    'django.contrib.staticfiles', # Garder cette ligne ici
-    'cloudinary',
-
-    # Nos applications
     'users.apps.UsersConfig',
     'companies.apps.CompaniesConfig',
     'activities.apps.ActivitiesConfig',
@@ -107,7 +99,17 @@ USE_TZ = True
 # --- 10. Fichiers statiques et médias ---
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-MEDIA_URL = '/media/' # Garder MEDIA_URL est une bonne pratique
+MEDIA_URL = '/media/'
+
+# Configuration du stockage pour Django 4.2+
+STORAGES = {
+    "default": {
+        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    }
+}
 
 # --- 11. Modèle d'utilisateur personnalisé ---
 AUTH_USER_MODEL = 'users.CustomUser'
@@ -126,13 +128,13 @@ JAZZMIN_SETTINGS = {'site_title': 'SportRadar Admin', 'welcome_sign': 'Bienvenue
 CORS_ALLOWED_ORIGINS = ["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:5173", "https://sportradar-front.onrender.com"]
 CSRF_TRUSTED_ORIGINS = ["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:5173", "https://sportradar-front.onrender.com"]
 
-# --- 14. Configuration de Cloudinary pour le stockage des médias ---
+# --- 14. Configuration de Cloudinary ---
+# On supprime DEFAULT_FILE_STORAGE car il est maintenant dans le dictionnaire STORAGES
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': os.getenv('CLOUDINARY_CLOUD_NAME' ),
     'API_KEY': os.getenv('CLOUDINARY_API_KEY'),
     'API_SECRET': os.getenv('CLOUDINARY_API_SECRET'),
 }
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 # --- 15. Clés d'API externes ---
 OPENWEATHER_API_KEY = os.getenv('OPENWEATHER_API_KEY')
