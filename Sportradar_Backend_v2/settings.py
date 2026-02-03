@@ -129,7 +129,6 @@ CORS_ALLOWED_ORIGINS = ["http://localhost:3000", "http://127.0.0.1:3000", "http:
 CSRF_TRUSTED_ORIGINS = ["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:5173", "https://sportradar-front.onrender.com"]
 
 # --- 14. Configuration de Cloudinary ---
-# On supprime DEFAULT_FILE_STORAGE car il est maintenant dans le dictionnaire STORAGES
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': os.getenv('CLOUDINARY_CLOUD_NAME' ),
     'API_KEY': os.getenv('CLOUDINARY_API_KEY'),
