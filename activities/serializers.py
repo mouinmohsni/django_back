@@ -88,3 +88,40 @@ class SimpleActivitySerializer(serializers.ModelSerializer):
 
     def get_participants_count(self, obj):
         return obj.bookings.filter(status='confirmed').count()
+
+
+# ... (votre classe ActivitySerializer existante reste ici, inchangée) ...
+
+# ===================================================================
+# == NOUVEAU SERIALIZER DE MISE À JOUR (LA CORRECTION)
+# ===================================================================
+class ActivityUpdateSerializer(serializers.ModelSerializer):
+    """
+    Serializer spécifique pour la MISE À JOUR d'une activité.
+    Il traite le champ 'image' comme une simple chaîne de caractères (CharField)
+    pour qu'on puisse lui passer le Public ID de Cloudinary depuis un script.
+    """
+    # CORRECTION CLÉ : On redéfinit le champ 'image' pour qu'il accepte du texte.
+    # 'required=False' et 'allow_blank=True' permettent de ne pas envoyer l'image
+    # à chaque mise à jour si on ne veut pas la changer.
+    image = serializers.CharField(required=False, allow_blank=True)
+
+    # On s'assure que l'instructor_id est bien géré comme dans l'autre serializer.
+    instructor_id = serializers.PrimaryKeyRelatedField(
+        queryset=CustomUser.objects.filter(type=CustomUser.USER_TYPE_COACH),
+        source='instructor',
+        write_only=True,
+        required=False,
+        allow_null=True
+    )
+
+    class Meta:
+        model = Activity
+        # On liste uniquement les champs qu'on veut pouvoir mettre à jour via notre script.
+        fields = [
+            'name', 'description', 'category', 'image', 'location_address',
+            'start_time', 'duration', 'max_participants', 'price', 'level',
+            'venue', 'is_public', 'instructor_id'
+        ]
+
+# ... (votre classe SimpleActivitySerializer reste ici, inchangée) ...
