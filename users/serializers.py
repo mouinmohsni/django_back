@@ -107,17 +107,53 @@ class UserCreateSerializer(serializers.ModelSerializer):
 # == SERIALIZER DE MISE À JOUR (POUR MODIFIER LE PROFIL)
 # ===================================================================
 class UserUpdateSerializer(serializers.ModelSerializer):
-    """
-    Serializer pour la MISE À JOUR partielle du profil d'un utilisateur.
-    Permet de modifier uniquement les champs autorisés.
-    """
     class Meta:
         model = User
-        # L'utilisateur peut mettre à jour ces champs. L'avatar est géré ici.
+        # ✅ CORRECTION POUR L'AVATAR :
+        # En listant 'avatar' ici, nous autorisons explicitement le serializer
+        # à accepter et à traiter un fichier pour ce champ.
         fields = ['username', 'first_name', 'last_name', 'preferences', 'avatar']
+
+        # ✅ CORRECTION POUR L'AVATAR (ET LES AUTRES CHAMPS) :
+        # En marquant 'avatar' et les autres champs comme non obligatoires ('required': False),
+        # nous permettons des mises à jour partielles (PATCH). Vous pouvez envoyer
+        # uniquement l'avatar, ou uniquement les préférences, sans que le serializer
+        # ne se plaigne que les autres champs sont manquants.
         extra_kwargs = {
-            'avatar': {'required': False} # L'avatar n'est pas obligatoire à chaque mise à jour
+            'avatar': {'required': False},
+            'username': {'required': False},
+            'first_name': {'required': False},
+            'last_name': {'required': False},
+            'preferences': {'required': False},
         }
+
+    def update(self, instance, validated_data):
+        # On isole les données de 'preferences' pour un traitement spécial.
+        new_preferences = validated_data.pop('preferences', None)
+
+        # ✅ CORRECTION POUR L'AVATAR :
+        # La méthode super().update() est la méthode standard de Django REST Framework.
+        # Elle sait parfaitement comment gérer les champs simples (comme 'username')
+        # ET les champs de type fichier (comme 'avatar').
+        # Quand 'validated_data' contient une clé 'avatar' avec un fichier,
+        # super().update() va automatiquement :
+        #   1. Envoyer le fichier à Cloudinary (grâce à votre configuration dans settings.py).
+        #   2. Récupérer l'URL ou le chemin renvoyé par Cloudinary.
+        #   3. Sauvegarder ce chemin dans le champ 'avatar' de l'utilisateur en base de données.
+        instance = super().update(instance, validated_data)
+
+        # ✅ CORRECTION POUR LES PRÉFÉRENCES :
+        # C'est la logique de fusion manuelle que nous avons ajoutée spécifiquement
+        # pour le champ JSON 'preferences', car le comportement par défaut n'était pas bon.
+        if new_preferences is not None:
+            current_preferences = instance.preferences.copy() if instance.preferences else {}
+            current_preferences.update(new_preferences)
+            instance.preferences = current_preferences
+            # On sauvegarde une dernière fois pour s'assurer que les préférences fusionnées
+            # sont bien écrites en base de données.
+            instance.save()
+
+        return instance
 
 # ===================================================================
 # == SERIALIZER SIMPLE (POUR LES RELATIONS IMBRIQUÉES)
