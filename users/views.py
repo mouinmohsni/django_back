@@ -1,4 +1,5 @@
 # users/views.py
+from django.utils import timezone
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import viewsets, permissions, status
 from rest_framework import serializers # <--- AJOUTEZ CETTE LIGNE
@@ -8,6 +9,8 @@ from rest_framework.response import Response
 from django.contrib.auth import get_user_model, update_session_auth_hash
 from django.db.models import Q
 
+from activities.models import Activity
+from activities.serializers import SimpleActivitySerializer
 # On importe les serializers renommés et spécialisés
 from .serializers import (
     UserCreateSerializer,
@@ -154,13 +157,45 @@ def change_password(request):
 class CoachViewSet(viewsets.ReadOnlyModelViewSet):
     """
     Un ViewSet public en lecture seule pour lister tous les utilisateurs
-    ayant le rôle de 'coach'.
+    ayant le rôle de 'coach' et leurs activités associées.
+    - GET /api/coaches/ -> Liste tous les coachs.
+    - GET /api/coaches/{id}/ -> Détail d'un coach.
+    - GET /api/coaches/{id}/activities/ -> Liste les activités de ce coach.
     """
-    # Le queryset filtre directement pour ne garder que les coachs.
     queryset = User.objects.filter(type=User.USER_TYPE_COACH).order_by('first_name')
-
-    # On utilise le serializer de lecture pour ne pas exposer de données sensibles.
     serializer_class = UserReadSerializer
-
-    # Tout le monde peut accéder à cette liste.
     permission_classes = [permissions.AllowAny]
+
+    # ===================================================================
+    # == NOUVELLE ACTION POUR LISTER LES ACTIVITÉS D'UN COACH
+    # ===================================================================
+    @action(detail=True, methods=['get'], url_path='activities')
+    def activities(self, request, pk=None):
+        """
+        Action personnalisée pour renvoyer toutes les activités futures
+        d'un coach spécifique.
+        """
+        # 1. Récupérer l'objet coach (grâce au 'pk' de l'URL)
+        #    get_object() est une méthode de DRF qui gère le 404 pour nous.
+        coach = self.get_object()
+
+        # 2. Filtrer les activités liées à ce coach.
+        #    On utilise 'instructor=coach' pour faire la jointure.
+        #    On filtre aussi pour ne montrer que les activités futures.
+        activities_queryset = Activity.objects.filter(
+            instructor=coach,
+            start_time__gt=timezone.now()  # Assurez-vous d'importer timezone de django.utils
+        ).order_by('start_time')
+
+        # 3. Paginer les résultats (bonne pratique si un coach a beaucoup d'activités)
+        page = self.paginate_queryset(activities_queryset)
+        if page is not None:
+            # On utilise un serializer simple pour les activités pour ne pas surcharger la réponse.
+            serializer = SimpleActivitySerializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        # 4. Sérialiser les données avec le serializer d'activité
+        serializer = SimpleActivitySerializer(activities_queryset, many=True)
+
+        # 5. Renvoyer la réponse
+        return Response(serializer.data)
