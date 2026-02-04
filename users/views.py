@@ -102,6 +102,7 @@ class UserViewSet(viewsets.ModelViewSet):
         Utilise le serializer de mise à jour (UserUpdateSerializer).
         """
         user = request.user
+        serializer = self.get_serializer(user, data=request.data, partial=True)  # partial=True pour PATCH
 
         # CORRECTION : On instancie DIRECTEMENT le bon serializer.
         # On ignore get_serializer_class() qui se trompait.
