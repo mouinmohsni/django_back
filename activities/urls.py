@@ -9,7 +9,7 @@ router = DefaultRouter()
 router.register(r'', ActivityViewSet, basename='activity')
 
 # Pour les ratings, on va utiliser une approche manuelle au lieu du NestedRouter
-# qui cause des problèmes avec Swagger
+
 urlpatterns = [
     path('', include(router.urls)),
     # Routes manuelles pour les ratings

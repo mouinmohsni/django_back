@@ -86,7 +86,7 @@ class Activity(models.Model):
         choices=VenueChoices.choices,
         default=VenueChoices.INDOOR,
         verbose_name="Lieu (Intérieur/Extérieur)"
-    )
+     )
 
     sport_zen = models.BooleanField(
         default=False,

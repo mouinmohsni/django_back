@@ -109,4 +109,3 @@ class SimpleActivitySerializer(serializers.ModelSerializer):
     def get_participants_count(self, obj):
         return obj.bookings.filter(status='confirmed').count()
 
-# Le 'ActivityUpdateSerializer' a été supprimé car il est maintenant inutile.
