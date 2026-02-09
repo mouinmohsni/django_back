@@ -80,7 +80,7 @@ class ActivityViewSet(viewsets.ModelViewSet):
         et sauvegarde l'instructeur si un ID est fourni.
         """
         # On récupère l'ID de l'instructeur depuis les données validées du serializer.
-        instructor_id = serializer.validated_data.get('instructor_id')
+        instructor_id = serializer.validated_data.get('instructor')
 
         # On sauvegarde l'activité en lui passant la compagnie et l'instructeur.
         # Si instructor_id est None, Django l'ignorera, ce qui est parfait.
