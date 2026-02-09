@@ -6,8 +6,8 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from .models import Activity
-# ✅ On importe uniquement le serializer principal
-from .serializers import ActivitySerializer
+# ✅ MODIFICATION : On importe les deux serializers spécialisés
+from .serializers import ActivityReadSerializer, ActivityWriteSerializer
 from users.permissions import IsBusinessOwner
 
 
@@ -17,21 +17,20 @@ class IsActivityCompanyOwner(permissions.BasePermission):
     Vérifie que l'utilisateur est authentifié et que l'activité
     appartient bien à l'entreprise de l'utilisateur.
     """
+
     def has_object_permission(self, request, view, obj):
         if not (request.user and request.user.is_authenticated and hasattr(request.user, 'company')):
             return False
         return obj.company == request.user.company
 
 
-# --- ViewSet pour les Activités (Version Nettoyée) ---
+# --- ViewSet pour les Activités (Version Finale et Corrigée) ---
 class ActivityViewSet(viewsets.ModelViewSet):
     """
     ViewSet pour gérer les opérations CRUD sur les activités.
-    Utilise un seul serializer intelligent pour toutes les actions.
+    Utilise des serializers distincts pour la lecture et l'écriture
+    afin de garantir un comportement cohérent.
     """
-    # ✅ On définit le serializer par défaut une seule fois.
-    serializer_class = ActivitySerializer
-
     queryset = Activity.objects.all().select_related(
         'company',
         'instructor'
@@ -40,7 +39,16 @@ class ActivityViewSet(viewsets.ModelViewSet):
         'bookings'
     ).order_by('start_time')
 
-    # ✅ La méthode 'get_serializer_class' a été supprimée car elle est inutile.
+    # ✅ LA CORRECTION DÉFINITIVE : On choisit le bon serializer pour chaque action.
+    def get_serializer_class(self):
+        """
+        Retourne le serializer approprié en fonction de l'action.
+        - Lecture ('list', 'retrieve'): ActivityReadSerializer (qui retourne l'URL complète de l'image).
+        - Écriture ('create', 'update', 'partial_update'): ActivityWriteSerializer (qui attend un fichier).
+        """
+        if self.action in ['create', 'update', 'partial_update']:
+            return ActivityWriteSerializer
+        return ActivityReadSerializer
 
     def get_queryset(self):
         """
@@ -48,7 +56,10 @@ class ActivityViewSet(viewsets.ModelViewSet):
         """
         qs = super().get_queryset()
         if self.action == 'list':
+            # Pour la liste publique, on ne montre que les activités futures et publiques.
             return qs.filter(is_public=True, start_time__gt=timezone.now())
+        # Pour les autres actions (retrieve, update...), on ne filtre pas ici.
+        # Les permissions s'en chargeront.
         return qs
 
     def get_permissions(self):
@@ -59,7 +70,7 @@ class ActivityViewSet(viewsets.ModelViewSet):
             self.permission_classes = [permissions.AllowAny]
         elif self.action == 'create':
             self.permission_classes = [permissions.IsAuthenticated, IsBusinessOwner]
-        else:
+        else:  # 'update', 'partial_update', 'destroy'
             self.permission_classes = [permissions.IsAuthenticated, IsActivityCompanyOwner]
         return super().get_permissions()
 
@@ -84,5 +95,8 @@ class ActivityViewSet(viewsets.ModelViewSet):
         venue_filter = 'inside' if condition in indoor_conditions else 'outside'
         qs = self.get_queryset().filter(venue=venue_filter)
         qs = qs.order_by('start_time')[:12]
-        serializer = self.get_serializer(qs, many=True)
+
+        # On utilise le serializer de lecture pour être sûr de renvoyer les bonnes données.
+        serializer = ActivityReadSerializer(qs, many=True)
         return Response(serializer.data)
+

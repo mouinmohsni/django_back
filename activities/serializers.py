@@ -8,31 +8,20 @@ from companies.serializers import SimpleCompanySerializer
 from users.serializers import SimpleUserSerializer
 from .rating_serializers import ActivityRatingReadSerializer
 
-# Le HybridImageField a été COMPLÈTEMENT SUPPRIMÉ.
-
 # ===================================================================
-# == SERIALIZER PRINCIPAL ET UNIQUE (VERSION STANDARD)
+# == SERIALIZER DE LECTURE (CELUI QUI VA RÉSOUDRE LE PROBLÈME)
 # ===================================================================
-class ActivitySerializer(serializers.ModelSerializer):
+class ActivityReadSerializer(serializers.ModelSerializer):
     """
-    Serializer principal et UNIQUE pour les activités.
-    Il se comporte comme un serializer Django standard.
-    Le champ 'image' attend un fichier et retourne une URL complète.
+    Serializer pour AFFICHER les informations d'une activité.
+    Le champ 'image' est en lecture seule et retournera l'URL complète.
     """
     company = SimpleCompanySerializer(read_only=True)
     instructor = SimpleUserSerializer(read_only=True)
-    participants_count = serializers.SerializerMethodField(read_only=True)
-    effective_location = serializers.SerializerMethodField(read_only=True)
+    participants_count = serializers.SerializerMethodField()
+    effective_location = serializers.SerializerMethodField()
     ratings = ActivityRatingReadSerializer(many=True, read_only=True)
-    average_score = serializers.SerializerMethodField(read_only=True)
-
-    instructor_id = serializers.PrimaryKeyRelatedField(
-        queryset=CustomUser.objects.filter(type=CustomUser.USER_TYPE_COACH),
-        source='instructor',
-        write_only=True,
-        required=False,
-        allow_null=True
-    )
+    average_score = serializers.SerializerMethodField()
 
     class Meta:
         model = Activity
@@ -41,14 +30,9 @@ class ActivitySerializer(serializers.ModelSerializer):
             'company', 'instructor', 'start_time', 'duration', 'max_participants',
             'price', 'level', 'venue', 'is_public', 'created_at',
             'participants_count', 'effective_location', 'ratings', 'average_score',
-            'instructor_id', 'sport_zen'
+            'sport_zen'
         ]
-        # On s'assure que les champs en lecture seule sont corrects.
-        read_only_fields = [
-            'id', 'company', 'instructor', 'created_at',
-            'participants_count', 'effective_location',
-            'ratings', 'average_score'
-        ]
+        read_only_fields = fields  # Tous les champs sont en lecture seule
 
     def get_participants_count(self, obj):
         return obj.bookings.filter(status='confirmed').count()
@@ -64,27 +48,46 @@ class ActivitySerializer(serializers.ModelSerializer):
         average = obj.ratings.aggregate(Avg('score')).get('score__avg')
         return round(average, 1) if average is not None else None
 
-
-# --- SimpleActivitySerializer (ne change pas, il est déjà simple) ---
-class SimpleActivitySerializer(serializers.ModelSerializer):
-    # ... (le contenu de cette classe ne change pas)
-    company = SimpleCompanySerializer(read_only=True)
-    instructor = SimpleUserSerializer(read_only=True)
-    average_score = serializers.SerializerMethodField()
-    participants_count = serializers.SerializerMethodField()
+# ===================================================================
+# == SERIALIZER D'ÉCRITURE (POUR CRÉER/MODIFIER)
+# ===================================================================
+class ActivityWriteSerializer(serializers.ModelSerializer):
+    """
+    Serializer pour CRÉER ou MODIFIER une activité.
+    Le champ 'image' attend un fichier.
+    """
+    instructor_id = serializers.PrimaryKeyRelatedField(
+        queryset=CustomUser.objects.filter(type=CustomUser.USER_TYPE_COACH),
+        source='instructor',
+        write_only=True,
+        required=False,
+        allow_null=True
+    )
 
     class Meta:
         model = Activity
+        # On liste tous les champs modifiables
+        fields = [
+            'name', 'description', 'category', 'image', 'location_address',
+            'start_time', 'duration', 'max_participants', 'price', 'level',
+            'venue', 'is_public', 'instructor_id', 'sport_zen'
+        ]
+        # On s'assure que le champ image n'est pas obligatoire pour les mises à jour
+        extra_kwargs = {
+            'image': {'required': False}
+        }
+
+# --- SimpleActivitySerializer (ne change pas) ---
+class SimpleActivitySerializer(ActivityReadSerializer):
+    """
+    Version légère du serializer de lecture pour les listes.
+    Hérite de ActivityReadSerializer pour garantir la cohérence.
+    """
+    class Meta(ActivityReadSerializer.Meta):
+        # On choisit les champs qu'on veut pour la version simple
         fields = [
             'id', 'name', 'description', 'category', 'image',
             'company', 'instructor', 'start_time', 'duration',
             'price', 'level', 'average_score','participants_count', 'max_participants',
         ]
-        read_only_fields = fields
 
-    def get_average_score(self, obj: Activity) -> float | None:
-        average = obj.ratings.aggregate(Avg('score')).get('score__avg')
-        return round(average, 1) if average is not None else None
-
-    def get_participants_count(self, obj):
-        return obj.bookings.filter(status='confirmed').count()
