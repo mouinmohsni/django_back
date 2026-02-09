@@ -88,6 +88,13 @@ class Activity(models.Model):
         verbose_name="Lieu (Intérieur/Extérieur)"
     )
 
+    sport_zen = models.BooleanField(
+        default=False,
+        verbose_name="Label SportZen",
+        help_text="Cocher si l'activité est accessible, non-compétitive et bienveillante."
+    )
+
+
     # --- Métadonnées ---
     is_public = models.BooleanField(
         default=True,

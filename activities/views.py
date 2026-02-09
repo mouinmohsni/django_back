@@ -6,8 +6,8 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from .models import Activity
-# CORRECTION 1 : Assurez-vous que ActivityUpdateSerializer est bien importé
-from .serializers import ActivitySerializer, ActivityUpdateSerializer
+# ✅ On importe uniquement le serializer principal
+from .serializers import ActivitySerializer
 from users.permissions import IsBusinessOwner
 
 
@@ -23,13 +23,14 @@ class IsActivityCompanyOwner(permissions.BasePermission):
         return obj.company == request.user.company
 
 
-# --- ViewSet pour les Activités ---
+# --- ViewSet pour les Activités (Version Nettoyée) ---
 class ActivityViewSet(viewsets.ModelViewSet):
     """
     ViewSet pour gérer les opérations CRUD sur les activités.
+    Utilise un seul serializer intelligent pour toutes les actions.
     """
-    # CORRECTION 2 : On retire la ligne 'serializer_class = ActivitySerializer'
-    # car la méthode get_serializer_class va s'en charger.
+    # ✅ On définit le serializer par défaut une seule fois.
+    serializer_class = ActivitySerializer
 
     queryset = Activity.objects.all().select_related(
         'company',
@@ -39,15 +40,7 @@ class ActivityViewSet(viewsets.ModelViewSet):
         'bookings'
     ).order_by('start_time')
 
-    # CORRECTION 3 : On ajoute la méthode get_serializer_class ici
-    def get_serializer_class(self):
-        """
-        Retourne le serializer approprié en fonction de l'action.
-        """
-        if self.action in ['update', 'partial_update']:
-            return ActivityUpdateSerializer
-        # Pour toutes les autres actions (list, retrieve, create), on utilise le serializer par défaut.
-        return ActivitySerializer
+    # ✅ La méthode 'get_serializer_class' a été supprimée car elle est inutile.
 
     def get_queryset(self):
         """
@@ -93,5 +86,3 @@ class ActivityViewSet(viewsets.ModelViewSet):
         qs = qs.order_by('start_time')[:12]
         serializer = self.get_serializer(qs, many=True)
         return Response(serializer.data)
-
-# CORRECTION 4 : Supprimez complètement le bloc dupliqué à la fin du fichier.
