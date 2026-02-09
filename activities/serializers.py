@@ -8,47 +8,17 @@ from companies.serializers import SimpleCompanySerializer
 from users.serializers import SimpleUserSerializer
 from .rating_serializers import ActivityRatingReadSerializer
 
-# ===================================================================
-# == CHAMP PERSONNALISÉ POUR L'IMAGE (LA SOLUTION HYBRIDE)
-# ===================================================================
-class HybridImageField(serializers.Field):
-    """
-    Un champ de serializer personnalisé qui peut accepter :
-    1. Un fichier téléversé (pour les formulaires web).
-    2. Une chaîne de caractères (le Public ID de Cloudinary, pour les scripts).
-    """
-
-    def to_internal_value(self, data):
-        if isinstance(data, str):
-            return data
-        return data
-
-    def to_representation(self, value):
-        """
-        CORRECTION : Retourne l'URL complète de l'image si elle est disponible.
-        """
-        # Si 'value' est un objet fichier avec une URL (cas de Cloudinary), on la retourne.
-        if hasattr(value, 'url'):
-            return value.url
-
-        # Sinon, on retourne le chemin tel quel (cas de secours).
-        return value.name if hasattr(value, 'name') else str(value)
-
-    def to_representation(self, value):
-        # Pour l'affichage, on retourne simplement le chemin de l'image.
-        return value.name if hasattr(value, 'name') else str(value)
+# Le HybridImageField a été COMPLÈTEMENT SUPPRIMÉ.
 
 # ===================================================================
-# == SERIALIZER PRINCIPAL ET UNIQUE
+# == SERIALIZER PRINCIPAL ET UNIQUE (VERSION STANDARD)
 # ===================================================================
 class ActivitySerializer(serializers.ModelSerializer):
     """
     Serializer principal et UNIQUE pour les activités.
-    Gère la création, la lecture et la mise à jour de manière flexible.
+    Il se comporte comme un serializer Django standard.
+    Le champ 'image' attend un fichier et retourne une URL complète.
     """
-    # ✅ On utilise notre nouveau champ personnalisé.
-    image = HybridImageField(required=False, allow_null=True)
-
     company = SimpleCompanySerializer(read_only=True)
     instructor = SimpleUserSerializer(read_only=True)
     participants_count = serializers.SerializerMethodField(read_only=True)
@@ -73,6 +43,7 @@ class ActivitySerializer(serializers.ModelSerializer):
             'participants_count', 'effective_location', 'ratings', 'average_score',
             'instructor_id', 'sport_zen'
         ]
+        # On s'assure que les champs en lecture seule sont corrects.
         read_only_fields = [
             'id', 'company', 'instructor', 'created_at',
             'participants_count', 'effective_location',
@@ -94,8 +65,9 @@ class ActivitySerializer(serializers.ModelSerializer):
         return round(average, 1) if average is not None else None
 
 
-# --- SimpleActivitySerializer (pour les listes légères, ne change pas) ---
+# --- SimpleActivitySerializer (ne change pas, il est déjà simple) ---
 class SimpleActivitySerializer(serializers.ModelSerializer):
+    # ... (le contenu de cette classe ne change pas)
     company = SimpleCompanySerializer(read_only=True)
     instructor = SimpleUserSerializer(read_only=True)
     average_score = serializers.SerializerMethodField()
@@ -116,4 +88,3 @@ class SimpleActivitySerializer(serializers.ModelSerializer):
 
     def get_participants_count(self, obj):
         return obj.bookings.filter(status='confirmed').count()
-
