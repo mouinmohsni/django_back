@@ -17,14 +17,22 @@ class HybridImageField(serializers.Field):
     1. Un fichier téléversé (pour les formulaires web).
     2. Une chaîne de caractères (le Public ID de Cloudinary, pour les scripts).
     """
+
     def to_internal_value(self, data):
-        # Si la donnée est une chaîne (ex: "media/activity_images/yoga.jpg"),
-        # on la retourne telle quelle. Le modèle la sauvegardera.
         if isinstance(data, str):
             return data
-        # Si la donnée est un fichier, on le retourne. Le modèle le téléversera.
-        # DRF gère automatiquement les fichiers téléversés.
         return data
+
+    def to_representation(self, value):
+        """
+        CORRECTION : Retourne l'URL complète de l'image si elle est disponible.
+        """
+        # Si 'value' est un objet fichier avec une URL (cas de Cloudinary), on la retourne.
+        if hasattr(value, 'url'):
+            return value.url
+
+        # Sinon, on retourne le chemin tel quel (cas de secours).
+        return value.name if hasattr(value, 'name') else str(value)
 
     def to_representation(self, value):
         # Pour l'affichage, on retourne simplement le chemin de l'image.
