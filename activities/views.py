@@ -76,9 +76,18 @@ class ActivityViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         """
-        Associe automatiquement l'activité à l'entreprise de l'utilisateur connecté lors de la création.
+        Associe automatiquement l'activité à l'entreprise de l'utilisateur connecté
+        et sauvegarde l'instructeur si un ID est fourni.
         """
-        serializer.save(company=self.request.user.company)
+        # On récupère l'ID de l'instructeur depuis les données validées du serializer.
+        instructor_id = serializer.validated_data.get('instructor_id')
+
+        # On sauvegarde l'activité en lui passant la compagnie et l'instructeur.
+        # Si instructor_id est None, Django l'ignorera, ce qui est parfait.
+        serializer.save(
+            company=self.request.user.company,
+            instructor=instructor_id
+        )
 
     @action(detail=False, methods=['get'], url_path='recommendations', permission_classes=[permissions.AllowAny])
     def recommendations(self, request):
