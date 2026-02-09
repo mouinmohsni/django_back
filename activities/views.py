@@ -7,7 +7,7 @@ from rest_framework.response import Response
 
 from .models import Activity
 # ✅ MODIFICATION : On importe les deux serializers spécialisés
-from .serializers import ActivityReadSerializer, ActivityWriteSerializer
+#from .serializers import ActivityReadSerializer, ActivityWriteSerializer
 from users.permissions import IsBusinessOwner
 
 
