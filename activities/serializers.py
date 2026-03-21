@@ -21,10 +21,12 @@ class ActivitySerializer(serializers.ModelSerializer):
     """
     company = SimpleCompanySerializer(read_only=True)
     instructor = SimpleUserSerializer(read_only=True)
-    participants_count = serializers.SerializerMethodField(read_only=True)
     effective_location = serializers.SerializerMethodField(read_only=True)
     ratings = ActivityRatingReadSerializer(many=True, read_only=True)
     average_score = serializers.SerializerMethodField(read_only=True)
+    participants_count = serializers.ReadOnlyField()
+    places_disponibles = serializers.ReadOnlyField()
+
 
     instructor_id = serializers.PrimaryKeyRelatedField(
         queryset=CustomUser.objects.filter(type=CustomUser.USER_TYPE_COACH),
@@ -40,18 +42,17 @@ class ActivitySerializer(serializers.ModelSerializer):
             'id', 'name', 'description', 'category', 'image', 'location_address',
             'company', 'instructor', 'start_time', 'duration', 'max_participants',
             'price', 'level', 'venue', 'is_public', 'created_at',
-            'participants_count', 'effective_location', 'ratings', 'average_score',
+            'participants_count','places_disponibles', 'effective_location', 'ratings', 'average_score',
             'instructor_id', 'sport_zen'
         ]
         # On s'assure que les champs en lecture seule sont corrects.
         read_only_fields = [
             'id', 'company', 'instructor', 'created_at',
-            'participants_count', 'effective_location',
+            'participants_count','places_disponibles', 'effective_location',
             'ratings', 'average_score'
         ]
 
-    def get_participants_count(self, obj):
-        return obj.bookings.filter(status='confirmed').count()
+
 
     def get_effective_location(self, obj: Activity) -> str:
         if obj.location_address:
@@ -71,14 +72,15 @@ class SimpleActivitySerializer(serializers.ModelSerializer):
     company = SimpleCompanySerializer(read_only=True)
     instructor = SimpleUserSerializer(read_only=True)
     average_score = serializers.SerializerMethodField()
-    participants_count = serializers.SerializerMethodField()
+    participants_count = serializers.ReadOnlyField()
+    places_disponibles = serializers.ReadOnlyField()
 
     class Meta:
         model = Activity
         fields = [
             'id', 'name', 'description', 'category', 'image',
             'company', 'instructor', 'start_time', 'duration',
-            'price', 'level', 'average_score','participants_count', 'max_participants',
+            'price', 'level', 'average_score','participants_count', 'max_participants','places_disponibles'
         ]
         read_only_fields = fields
 

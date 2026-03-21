@@ -5,6 +5,8 @@ from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
 # On importe le modèle Company pour créer la liaison
 from companies.models import Company
+from django.db.models import Sum
+
 
 class Activity(models.Model):
     """
@@ -102,6 +104,23 @@ class Activity(models.Model):
         help_text="Décocher pour masquer l'activité du site public."
     )
     created_at = models.DateTimeField(auto_now_add=True)
+
+    @property
+    def participants_count(self):
+        """
+        Calcule la somme totale des places réservées (nb_persone)
+        pour cette activité via la table Booking.
+        """
+        # On utilise 'bookings' car c'est le related_name dans votre modèle Booking
+        result = self.bookings.aggregate(total=Sum('nb_persone'))['total']
+        return result or 0
+
+    @property
+    def places_disponibles(self):
+        """
+        Retourne le nombre de places restantes.
+        """
+        return max(0, self.max_participants - self.participants_count)
 
     class Meta:
         ordering = ['start_time'] # Les activités sont triées par date de début par défaut.
