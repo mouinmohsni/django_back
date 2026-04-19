@@ -6,6 +6,7 @@ import os
 from pathlib import Path
 from datetime import timedelta
 import dj_database_url
+from dotenv import load_dotenv
 
 # --- 1. Définitions de base ---
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -75,12 +76,30 @@ TEMPLATES = [
         },
     },
 ]
-
 # --- 7. Base de données ---
-if IS_PRODUCTION:
-    DATABASES = {'default': dj_database_url.config(conn_max_age=600, ssl_require=True)}
+env_path = os.path.join(BASE_DIR, '.env')
+load_dotenv(dotenv_path=env_path)
+
+db_url = os.getenv('DATABASE_URL')
+print("db_url=========",db_url)
+
+if db_url:
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=db_url,
+            conn_max_age=600,
+            ssl_require=True  # TRÈS IMPORTANT pour Render depuis l'extérieur
+        )
+    }
+    print("🚀 Tentative de connexion à la base externe de Render...")
 else:
-    DATABASES = {'default': {'ENGINE': 'django.db.backends.sqlite3', 'NAME': BASE_DIR / 'db.sqlite3'}}
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
+
 
 # --- 8. Validation des mots de passe ---
 AUTH_PASSWORD_VALIDATORS = [
@@ -129,8 +148,8 @@ SPECTACULAR_SETTINGS = {'TITLE': 'SportRadar API', 'DESCRIPTION': 'API pour le p
 JAZZMIN_SETTINGS = {'site_title': 'SportRadar Admin', 'welcome_sign': 'Bienvenue dans SportRadar', 'show_sidebar': True, 'navigation_expanded': True}
 
 # --- 13. CORS et CSRF ---
-CORS_ALLOWED_ORIGINS = ["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:5173", "https://sportradar-front.onrender.com"]
-CSRF_TRUSTED_ORIGINS = ["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:5173", "https://sportradar-front.onrender.com"]
+CORS_ALLOWED_ORIGINS = ["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:5173","http://localhost:5175", "https://sportradar-front.onrender.com"]
+CSRF_TRUSTED_ORIGINS = ["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:5173","http://localhost:5175", "https://sportradar-front.onrender.com"]
 
 # --- 14. Configuration de Cloudinary ---
 CLOUDINARY_STORAGE = {

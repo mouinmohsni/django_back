@@ -57,6 +57,12 @@ class CustomUser(AbstractUser):
     # ... (avatar, preferences, etc. restent les mêmes)
     avatar = models.ImageField(upload_to=random_avatar_name, null=True, blank=True)
     preferences = models.JSONField(default=get_default_preferences, blank=True)
+    numero_siret = models.CharField(
+        max_length=14,
+        blank=True,
+        null=True,
+        verbose_name="Numéro SIRET"
+    )
 
     # --- Configuration du modèle (inchangée) ---
     USERNAME_FIELD = 'email'
