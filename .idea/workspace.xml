@@ -4,22 +4,16 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b08937a4-1d19-483e-9f0e-e3d3f0115a81" name="Changes" comment="fin">
-      <change afterPath="$PROJECT_DIR$/.idea/Sportradar_Backend_v2.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/dataSources.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/api_tests/test_business_user.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/api_tests/test_coach_user.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/api_tests/test_personal_user.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/api_tests/test_visitor.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/notifications/serializers.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/notifications/signals.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/notifications/urls.py" afterDir="false" />
+    <list default="true" id="b08937a4-1d19-483e-9f0e-e3d3f0115a81" name="Changes" comment="update activate-booking 21/03">
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Sportradar_Backend_v2/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/Sportradar_Backend_v2/settings.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/companies/migrations/0001_initial.py" beforeDir="false" afterPath="$PROJECT_DIR$/companies/migrations/0001_initial.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/companies/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/companies/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/companies/serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/companies/serializers.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/users/migrations/0001_initial.py" beforeDir="false" afterPath="$PROJECT_DIR$/users/migrations/0001_initial.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/users/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/users/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/users/serializers.py" beforeDir="false" afterPath="$PROJECT_DIR$/users/serializers.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -27,6 +21,9 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="ChangesViewManager" show_ignored="true" />
+  <component name="DjangoConsoleOptions" custom-start-script="import sys; print('Python %s on %s' % (sys.version, sys.platform))&#10;import django; print('Django %s' % django.get_version())&#10;sys.path.extend([WORKING_DIR_AND_PYTHON_PATHS])&#10;if 'setup' in dir(django): django.setup()&#10;import django_manage_shell; django_manage_shell.run(PROJECT_ROOT)">
+    <option name="myCustomStartScript" value="import sys; print('Python %s on %s' % (sys.version, sys.platform))&#10;import django; print('Django %s' % django.get_version())&#10;sys.path.extend([WORKING_DIR_AND_PYTHON_PATHS])&#10;if 'setup' in dir(django): django.setup()&#10;import django_manage_shell; django_manage_shell.run(PROJECT_ROOT)" />
+  </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
@@ -37,6 +34,24 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;mouinmohsni&quot;
+  }
+}</component>
+  <component name="GithubDefaultAccount">
+    <option name="defaultAccountId" value="aa8d1bf2-70df-44e1-8dda-4e73f91cf952" />
+  </component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/mouinmohsni/django_back.git&quot;,
+    &quot;accountId&quot;: &quot;aa8d1bf2-70df-44e1-8dda-4e73f91cf952&quot;
+  }
+}</component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
+  </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 3
 }</component>
@@ -46,28 +61,35 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "Django Server.Sportradar_Backend_v2.executor": "Run",
-    "Python.api_test.executor": "Run",
-    "Python.run_all_tests.executor": "Run",
-    "Python.test_visitor.executor": "Run",
-    "RunOnceActivity.OpenDjangoStructureViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.pycharm.django.structure.promotion.once.per.project": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "git-widget-placeholder": "master",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "ts.external.directory.path": "C:\\Program Files\\JetBrains\\PyCharm 2024.3.4\\plugins\\javascript-plugin\\jsLanguageServicesImpl\\external",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;Django Server.Sportradar_Backend_v2.executor&quot;: &quot;Run&quot;,
+    &quot;Python.api_test.executor&quot;: &quot;Run&quot;,
+    &quot;Python.run_all_tests.executor&quot;: &quot;Run&quot;,
+    &quot;Python.test_visitor.executor&quot;: &quot;Run&quot;,
+    &quot;Python.update_activities.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.OpenDjangoStructureViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.pycharm.django.structure.promotion.once.per.project&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;org.jetbrains.plugins.github.ui.GithubSettingsConfigurable&quot;,
+    &quot;ts.external.directory.path&quot;: &quot;C:\\Program Files\\JetBrains\\PyCharm 2024.3.4\\plugins\\javascript-plugin\\jsLanguageServicesImpl\\external&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  },
+  &quot;keyToStringList&quot;: {
+    &quot;DatabaseDriversLRU&quot;: [
+      &quot;postgresql&quot;
+    ]
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\mouin\OneDrive\Bureau\jihen\Sportradar_Backend_v2\media" />
@@ -121,6 +143,16 @@
       <workItem from="1768682129800" duration="18775000" />
       <workItem from="1769188185456" duration="11372000" />
       <workItem from="1769343213512" duration="109745000" />
+      <workItem from="1769966984398" duration="73756000" />
+      <workItem from="1770554301886" duration="13462000" />
+      <workItem from="1770652745933" duration="19235000" />
+      <workItem from="1773328568717" duration="24200000" />
+      <workItem from="1774039717082" duration="14714000" />
+      <workItem from="1774816852508" duration="3129000" />
+      <workItem from="1774857685352" duration="1179000" />
+      <workItem from="1775204143773" duration="641000" />
+      <workItem from="1775551358281" duration="65000" />
+      <workItem from="1776551255871" duration="10319000" />
     </task>
     <task id="LOCAL-00001" summary="first">
       <option name="closed" value="true" />
@@ -154,22 +186,375 @@
       <option name="project" value="LOCAL" />
       <updated>1769956890436</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="finnn">
+      <option name="closed" value="true" />
+      <created>1769977202303</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1769977202303</updated>
+    </task>
+    <task id="LOCAL-00006" summary="finnnnnn">
+      <option name="closed" value="true" />
+      <created>1769979612305</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1769979612305</updated>
+    </task>
+    <task id="LOCAL-00007" summary="finnnnnn--">
+      <option name="closed" value="true" />
+      <created>1769981929893</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1769981929893</updated>
+    </task>
+    <task id="LOCAL-00008" summary="Configure for Render deployment and add build script">
+      <option name="closed" value="true" />
+      <created>1769982302927</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1769982302927</updated>
+    </task>
+    <task id="LOCAL-00009" summary="Add STATIC_ROOT for production">
+      <option name="closed" value="true" />
+      <created>1770018809594</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1770018809594</updated>
+    </task>
+    <task id="LOCAL-00010" summary="Fix CORS origin format">
+      <option name="closed" value="true" />
+      <created>1770030887391</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1770030887391</updated>
+    </task>
+    <task id="LOCAL-00011" summary="Create initial migrations for apps">
+      <option name="closed" value="true" />
+      <created>1770031971317</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1770031971317</updated>
+    </task>
+    <task id="LOCAL-00012" summary="environment">
+      <option name="closed" value="true" />
+      <created>1770036784463</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1770036784463</updated>
+    </task>
+    <task id="LOCAL-00013" summary="users">
+      <option name="closed" value="true" />
+      <created>1770059602144</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1770059602144</updated>
+    </task>
+    <task id="LOCAL-00014" summary="users2">
+      <option name="closed" value="true" />
+      <created>1770060393276</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1770060393276</updated>
+    </task>
+    <task id="LOCAL-00015" summary="activite">
+      <option name="closed" value="true" />
+      <created>1770062528637</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1770062528637</updated>
+    </task>
+    <task id="LOCAL-00016" summary="activite">
+      <option name="closed" value="true" />
+      <created>1770062845625</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1770062845625</updated>
+    </task>
+    <task id="LOCAL-00017" summary="migration">
+      <option name="closed" value="true" />
+      <created>1770066052759</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1770066052759</updated>
+    </task>
+    <task id="LOCAL-00018" summary="booking">
+      <option name="closed" value="true" />
+      <created>1770067195590</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1770067195590</updated>
+    </task>
+    <task id="LOCAL-00019" summary="api">
+      <option name="closed" value="true" />
+      <created>1770069271254</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1770069271254</updated>
+    </task>
+    <task id="LOCAL-00020" summary="FIX: Force creation of initial migrations for all apps">
+      <option name="closed" value="true" />
+      <created>1770072839576</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1770072839576</updated>
+    </task>
+    <task id="LOCAL-00021" summary="user root activite">
+      <option name="closed" value="true" />
+      <created>1770078768019</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1770078768019</updated>
+    </task>
+    <task id="LOCAL-00022" summary="Cloudinary">
+      <option name="closed" value="true" />
+      <created>1770125868339</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1770125868339</updated>
+    </task>
+    <task id="LOCAL-00023" summary="Cloudinary 2">
+      <option name="closed" value="true" />
+      <created>1770126535441</created>
+      <option name="number" value="00023" />
+      <option name="presentableId" value="LOCAL-00023" />
+      <option name="project" value="LOCAL" />
+      <updated>1770126535441</updated>
+    </task>
+    <task id="LOCAL-00024" summary="Cloudinary 3">
+      <option name="closed" value="true" />
+      <created>1770126873161</created>
+      <option name="number" value="00024" />
+      <option name="presentableId" value="LOCAL-00024" />
+      <option name="project" value="LOCAL" />
+      <updated>1770126873161</updated>
+    </task>
+    <task id="LOCAL-00025" summary="Cloudinary 4">
+      <option name="closed" value="true" />
+      <created>1770127732937</created>
+      <option name="number" value="00025" />
+      <option name="presentableId" value="LOCAL-00025" />
+      <option name="project" value="LOCAL" />
+      <updated>1770127732937</updated>
+    </task>
+    <task id="LOCAL-00026" summary="Cloudinary 5 update user">
+      <option name="closed" value="true" />
+      <created>1770133782899</created>
+      <option name="number" value="00026" />
+      <option name="presentableId" value="LOCAL-00026" />
+      <option name="project" value="LOCAL" />
+      <updated>1770133782899</updated>
+    </task>
+    <task id="LOCAL-00027" summary="Cloudinary 6 update user">
+      <option name="closed" value="true" />
+      <created>1770138034625</created>
+      <option name="number" value="00027" />
+      <option name="presentableId" value="LOCAL-00027" />
+      <option name="project" value="LOCAL" />
+      <updated>1770138034625</updated>
+    </task>
+    <task id="LOCAL-00028" summary="activite update">
+      <option name="closed" value="true" />
+      <created>1770153738947</created>
+      <option name="number" value="00028" />
+      <option name="presentableId" value="LOCAL-00028" />
+      <option name="project" value="LOCAL" />
+      <updated>1770153738947</updated>
+    </task>
+    <task id="LOCAL-00029" summary="user coch">
+      <option name="closed" value="true" />
+      <created>1770227363683</created>
+      <option name="number" value="00029" />
+      <option name="presentableId" value="LOCAL-00029" />
+      <option name="project" value="LOCAL" />
+      <updated>1770227363683</updated>
+    </task>
+    <task id="LOCAL-00030" summary="user coch -1">
+      <option name="closed" value="true" />
+      <created>1770228585001</created>
+      <option name="number" value="00030" />
+      <option name="presentableId" value="LOCAL-00030" />
+      <option name="project" value="LOCAL" />
+      <updated>1770228585001</updated>
+    </task>
+    <task id="LOCAL-00031" summary="user coch -2">
+      <option name="closed" value="true" />
+      <created>1770233286965</created>
+      <option name="number" value="00031" />
+      <option name="presentableId" value="LOCAL-00031" />
+      <option name="project" value="LOCAL" />
+      <updated>1770233286965</updated>
+    </task>
+    <task id="LOCAL-00032" summary="user coch -2">
+      <option name="closed" value="true" />
+      <created>1770649443071</created>
+      <option name="number" value="00032" />
+      <option name="presentableId" value="LOCAL-00032" />
+      <option name="project" value="LOCAL" />
+      <updated>1770649443071</updated>
+    </task>
+    <task id="LOCAL-00033" summary="avivie zen and updae sport_zen-2">
+      <option name="closed" value="true" />
+      <created>1770654841543</created>
+      <option name="number" value="00033" />
+      <option name="presentableId" value="LOCAL-00033" />
+      <option name="project" value="LOCAL" />
+      <updated>1770654841543</updated>
+    </task>
+    <task id="LOCAL-00034" summary="avivie zen and updae sport_zen">
+      <option name="closed" value="true" />
+      <created>1770656052586</created>
+      <option name="number" value="00034" />
+      <option name="presentableId" value="LOCAL-00034" />
+      <option name="project" value="LOCAL" />
+      <updated>1770656052586</updated>
+    </task>
+    <task id="LOCAL-00035" summary="activiter image api">
+      <option name="closed" value="true" />
+      <created>1770660663797</created>
+      <option name="number" value="00035" />
+      <option name="presentableId" value="LOCAL-00035" />
+      <option name="project" value="LOCAL" />
+      <updated>1770660663797</updated>
+    </task>
+    <task id="LOCAL-00036" summary="activiter image api -2">
+      <option name="closed" value="true" />
+      <created>1770661024251</created>
+      <option name="number" value="00036" />
+      <option name="presentableId" value="LOCAL-00036" />
+      <option name="project" value="LOCAL" />
+      <updated>1770661024251</updated>
+    </task>
+    <task id="LOCAL-00037" summary="activiter image api -3">
+      <option name="closed" value="true" />
+      <created>1770661709656</created>
+      <option name="number" value="00037" />
+      <option name="presentableId" value="LOCAL-00037" />
+      <option name="project" value="LOCAL" />
+      <updated>1770661709656</updated>
+    </task>
+    <task id="LOCAL-00038" summary="create">
+      <option name="closed" value="true" />
+      <created>1770668806043</created>
+      <option name="number" value="00038" />
+      <option name="presentableId" value="LOCAL-00038" />
+      <option name="project" value="LOCAL" />
+      <updated>1770668806043</updated>
+    </task>
+    <task id="LOCAL-00039" summary="create -2">
+      <option name="closed" value="true" />
+      <created>1770679024794</created>
+      <option name="number" value="00039" />
+      <option name="presentableId" value="LOCAL-00039" />
+      <option name="project" value="LOCAL" />
+      <updated>1770679024794</updated>
+    </task>
+    <task id="LOCAL-00040" summary="create -3">
+      <option name="closed" value="true" />
+      <created>1770679864462</created>
+      <option name="number" value="00040" />
+      <option name="presentableId" value="LOCAL-00040" />
+      <option name="project" value="LOCAL" />
+      <updated>1770679864462</updated>
+    </task>
+    <task id="LOCAL-00041" summary="create -4">
+      <option name="closed" value="true" />
+      <created>1770680195550</created>
+      <option name="number" value="00041" />
+      <option name="presentableId" value="LOCAL-00041" />
+      <option name="project" value="LOCAL" />
+      <updated>1770680195550</updated>
+    </task>
+    <task id="LOCAL-00042" summary="create -4.1">
+      <option name="closed" value="true" />
+      <created>1770680377651</created>
+      <option name="number" value="00042" />
+      <option name="presentableId" value="LOCAL-00042" />
+      <option name="project" value="LOCAL" />
+      <updated>1770680377651</updated>
+    </task>
+    <task id="LOCAL-00043" summary="create -4.2">
+      <option name="closed" value="true" />
+      <created>1770680888960</created>
+      <option name="number" value="00043" />
+      <option name="presentableId" value="LOCAL-00043" />
+      <option name="project" value="LOCAL" />
+      <updated>1770680888960</updated>
+    </task>
+    <task id="LOCAL-00044" summary="update activate-booking 21/03">
+      <option name="closed" value="true" />
+      <created>1774126736364</created>
+      <option name="number" value="00044" />
+      <option name="presentableId" value="LOCAL-00044" />
+      <option name="project" value="LOCAL" />
+      <updated>1774126736364</updated>
+    </task>
+    <option name="localTasksCounter" value="45" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="first" />
-    <MESSAGE value="co" />
-    <MESSAGE value="updatz" />
-    <MESSAGE value="fin" />
-    <option name="LAST_COMMIT_MESSAGE" value="fin" />
+    <MESSAGE value="api" />
+    <MESSAGE value="FIX: Force creation of initial migrations for all apps" />
+    <MESSAGE value="user root activite" />
+    <MESSAGE value="Cloudinary" />
+    <MESSAGE value="Cloudinary 2" />
+    <MESSAGE value="Cloudinary 3" />
+    <MESSAGE value="Cloudinary 4" />
+    <MESSAGE value="Cloudinary 5 update user" />
+    <MESSAGE value="Cloudinary 6 update user" />
+    <MESSAGE value="activite update" />
+    <MESSAGE value="user coch" />
+    <MESSAGE value="user coch -1" />
+    <MESSAGE value="user coch -2" />
+    <MESSAGE value="avivie zen and updae sport_zen-2" />
+    <MESSAGE value="avivie zen and updae sport_zen" />
+    <MESSAGE value="activiter image api" />
+    <MESSAGE value="activiter image api -2" />
+    <MESSAGE value="activiter image api -3" />
+    <MESSAGE value="create" />
+    <MESSAGE value="create -2" />
+    <MESSAGE value="create -3" />
+    <MESSAGE value="create -4" />
+    <MESSAGE value="create -4.1" />
+    <MESSAGE value="create -4.2" />
+    <MESSAGE value="update activate-booking 21/03" />
+    <option name="LAST_COMMIT_MESSAGE" value="update activate-booking 21/03" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/Sportradar_Backend_v2$run_all_tests.coverage" NAME="run_all_tests Coverage Results" MODIFIED="1769358125210" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/Sportradar_Backend_v2$test_visitor.coverage" NAME="test_visitor Coverage Results" MODIFIED="1769191023333" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/api_tests" />
+    <SUITE FILE_PATH="coverage/Sportradar_Backend_v2$update_activities.coverage" NAME="update_activities Coverage Results" MODIFIED="1770157692454" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/Sportradar_Backend_v2$api_test.coverage" NAME="api_test Coverage Results" MODIFIED="1769877194179" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>
