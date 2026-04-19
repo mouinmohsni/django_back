@@ -64,6 +64,12 @@ class Company(models.Model):
         verbose_name="Vérifiée",
         help_text="Cocher si le profil de l'entreprise a été vérifié par un administrateur."
     )
+    numero_siret = models.CharField(
+        max_length=14,
+        blank=True,
+        null=True,
+        verbose_name="Numéro SIRET"
+    )
     created_at = models.DateTimeField(
         auto_now_add=True,
         verbose_name="Date de création"

@@ -25,7 +25,7 @@ class UserReadSerializer(serializers.ModelSerializer):
         model = User
         fields = [
             'id', 'email', 'username', 'first_name', 'last_name',
-            'type', 'company', 'avatar', 'preferences', 'is_staff'
+            'type', 'company', 'avatar', 'preferences', 'is_staff','numero_siret'
         ]
         # Tous les champs sont en lecture seule par défaut dans ce serializer.
         read_only_fields = fields
@@ -54,7 +54,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
         model = User
         fields = [
             'id', 'email', 'username', 'password', 'first_name', 'last_name',
-            'type', 'preferences', 'company_info'
+            'type', 'preferences', 'company_info','numero_siret'
         ]
         # 'id' est le seul champ qui sera lu après la création.
         read_only_fields = ['id']
@@ -74,6 +74,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
         C'est "tout ou rien" : si la création de l'entreprise échoue, l'utilisateur n'est pas créé.
         """
         company_info = validated_data.pop('company_info', None)
+        numero_siret = validated_data.pop('numero_siret', None)
         user_type = validated_data.get('type', User.USER_TYPE_PERSONAL)
 
         # On utilise une transaction pour garantir l'intégrité des données.
@@ -81,6 +82,10 @@ class UserCreateSerializer(serializers.ModelSerializer):
             with transaction.atomic():
                 # On utilise create_user pour hacher automatiquement le mot de passe.
                 user = User.objects.create_user(**validated_data)
+
+                if user_type == User.USER_TYPE_COACH and numero_siret:
+                    user.numero_siret = numero_siret
+                    user.save()
 
                 # Si c'est un propriétaire et que les infos de l'entreprise sont fournies...
                 if user_type == User.USER_TYPE_BUSINESS and company_info:
@@ -92,7 +97,8 @@ class UserCreateSerializer(serializers.ModelSerializer):
                         name=company_name,
                         address=company_info.get('address', ''),
                         phone_number=company_info.get('phone_number', ''),
-                        description=company_info.get('description', '')
+                        description=company_info.get('description', ''),
+                        numero_siret = company_info.get('numero_siret', '')
                     )
                     user.company = new_company
                     user.save()
@@ -113,6 +119,10 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         # En listant 'avatar' ici, nous autorisons explicitement le serializer
         # à accepter et à traiter un fichier pour ce champ.
         fields = ['username', 'first_name', 'last_name', 'preferences', 'avatar']
+        extra_kwargs = {
+            'numero_siret': {'required': False},
+
+        }
 
         # ✅ CORRECTION POUR L'AVATAR (ET LES AUTRES CHAMPS) :
         # En marquant 'avatar' et les autres champs comme non obligatoires ('required': False),

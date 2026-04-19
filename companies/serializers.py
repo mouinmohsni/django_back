@@ -15,7 +15,7 @@ class CompanySerializer(serializers.ModelSerializer):
         model = Company
         fields = [
             'id', 'name', 'description', 'logo', 'address', 'city', 'zip_code',
-            'phone_number', 'website', 'sport_zen', 'is_verified', 'created_at'
+            'phone_number', 'website', 'sport_zen','numero_siret', 'is_verified', 'created_at'
         ]
 
 
@@ -28,6 +28,6 @@ class SimpleCompanySerializer(serializers.ModelSerializer):
         model = Company
         fields = [
             'id', 'name', 'description', 'logo', 'phone_number',
-            'website', 'sport_zen', 'address', 'city'
+            'website', 'sport_zen', 'address', 'city','numero_siret'
         ]
         read_only_fields = fields
